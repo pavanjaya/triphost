@@ -35,24 +35,32 @@ function Accordion({ title, emoji, id, active, onToggle, count, children }: {
 }
 
 function HotelCard({ hotel }: { hotel: Trip["hotels"][0] }) {
+  const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(hotel.name + " " + hotel.location)}`;
   return (
-    <div className="rounded-2xl p-4 flex items-start justify-between gap-3" style={{ background: "#f7f7f5" }}>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-[#111827]">{hotel.name}</p>
-        <div className="flex items-center gap-1 mt-1" style={{ color: "#9ca3af" }}>
-          <MapPin size={11} /><span className="text-[11px]">{hotel.location}</span>
+    <div className="rounded-2xl p-4" style={{ background: "#f7f7f5" }}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-bold text-[#111827]">{hotel.name}</p>
+          <div className="flex items-center gap-1 mt-1" style={{ color: "#9ca3af" }}>
+            <MapPin size={11} /><span className="text-[11px]">{hotel.location}</span>
+          </div>
+          <div className="flex gap-3 mt-2">
+            <p className="text-[11px]"><span style={{ color: "#9ca3af" }}>In </span><strong>{fmt(hotel.check_in)}</strong></p>
+            <p className="text-[11px]"><span style={{ color: "#9ca3af" }}>Out </span><strong>{fmt(hotel.check_out)}</strong></p>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#eff6ff", color: "#2563eb" }}>{hotel.room_type}</span>
+            <span className="flex items-center gap-1 text-[11px]" style={{ color: "#9ca3af" }}><Utensils size={10} />{hotel.meal_plan}</span>
+          </div>
         </div>
-        <div className="flex gap-3 mt-2">
-          <p className="text-[11px]"><span style={{ color: "#9ca3af" }}>In </span><strong>{fmt(hotel.check_in)}</strong></p>
-          <p className="text-[11px]"><span style={{ color: "#9ca3af" }}>Out </span><strong>{fmt(hotel.check_out)}</strong></p>
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#eff6ff", color: "#2563eb" }}>{hotel.room_type}</span>
-          <span className="flex items-center gap-1 text-[11px]" style={{ color: "#9ca3af" }}><Utensils size={10} />{hotel.meal_plan}</span>
-        </div>
+        <a href={`tel:${hotel.phone}`} className="flex items-center gap-1.5 text-white text-[12px] font-bold px-4 py-2 rounded-full tap-active shrink-0" style={{ background: "#16a34a" }}>
+          <Phone size={12} /> Call
+        </a>
       </div>
-      <a href={`tel:${hotel.phone}`} className="flex items-center gap-1.5 text-white text-[12px] font-bold px-4 py-2 rounded-full tap-active shrink-0" style={{ background: "#16a34a" }}>
-        <Phone size={12} /> Call
+      <a href={mapsUrl} target="_blank" rel="noreferrer"
+        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[12px] font-bold tap-active"
+        style={{ background: "#fff", border: "1px solid #e5e7eb", color: "#2563eb" }}>
+        <MapPin size={13} /> Open in Google Maps
       </a>
     </div>
   );

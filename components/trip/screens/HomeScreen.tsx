@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Phone, MapPin, AlertTriangle, CheckCircle2, Navigation } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Phone, MapPin, AlertTriangle, CheckCircle2, Navigation, Wind, Droplets } from "lucide-react";
 import { Trip } from "@/lib/types";
 
 /* ── Dev phase override ── */
@@ -77,15 +77,68 @@ function DriverCard({ trip }: { trip: Trip }) {
 function SOSBar({ trip }: { trip: Trip }) {
   const emergency = trip.contacts[0];
   return (
-    <div className="mx-4 rounded-3xl px-5 py-3.5 mb-4 flex items-center gap-3" style={{ background: "#fff1f2", border: "1px solid #fecdd3" }}>
-      <AlertTriangle size={18} style={{ color: "#e11d48", flexShrink: 0 }} />
-      <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-bold" style={{ color: "#e11d48" }}>Need help? Call {emergency?.name}</p>
-        <p className="text-[11px]" style={{ color: "#9ca3af" }}>{emergency?.role}</p>
-      </div>
-      <a href={`tel:${emergency?.phone}`} className="flex items-center gap-1.5 text-[12px] font-bold px-4 py-2 rounded-xl tap-active shrink-0" style={{ background: "#e11d48", color: "#fff" }}>
-        <Phone size={12} /> SOS
+    <div className="mx-4 mb-4 flex gap-2">
+      <a href={`tel:${trip.driver.phone}`}
+        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl tap-active font-bold text-[12px]"
+        style={{ background: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", color: "#111827", border: "1px solid #e5e7eb" }}>
+        <Phone size={14} style={{ color: "#16a34a" }} /> Driver
       </a>
+      <a href={`tel:${emergency?.phone}`}
+        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl tap-active font-bold text-[12px]"
+        style={{ background: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.08)", color: "#111827", border: "1px solid #e5e7eb" }}>
+        <Phone size={14} style={{ color: "#0369a1" }} /> Operator
+      </a>
+      <a href={`tel:${emergency?.phone}`}
+        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl tap-active font-bold text-[12px]"
+        style={{ background: "#e11d48", color: "#fff" }}>
+        <AlertTriangle size={14} /> SOS
+      </a>
+    </div>
+  );
+}
+
+/* ── Weather widget ── */
+type Weather = { temp: number; desc: string; icon: string; humidity: number; wind: number };
+
+function WeatherWidget({ city }: { city: string }) {
+  const [weather, setWeather] = useState<Weather | null>(null);
+
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_KEY;
+    if (!apiKey) return;
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.main) setWeather({
+          temp: Math.round(d.main.temp),
+          desc: d.weather[0].description,
+          icon: d.weather[0].icon,
+          humidity: d.main.humidity,
+          wind: Math.round(d.wind.speed),
+        });
+      })
+      .catch(() => {});
+  }, [city]);
+
+  if (!weather) return null;
+
+  return (
+    <div className="mx-4 rounded-3xl px-5 py-4 mb-4 flex items-center gap-4" style={{ background: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`} alt={weather.desc} width={52} height={52} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#9ca3af" }}>{city} · Now</p>
+        <p className="text-[26px] font-black text-[#111827] leading-none">{weather.temp}°C</p>
+        <p className="text-[12px] mt-0.5 capitalize" style={{ color: "#6b7280" }}>{weather.desc}</p>
+      </div>
+      <div className="flex flex-col gap-1.5 text-right">
+        <div className="flex items-center gap-1 justify-end" style={{ color: "#9ca3af" }}>
+          <Droplets size={12} /><span className="text-[11px]">{weather.humidity}%</span>
+        </div>
+        <div className="flex items-center gap-1 justify-end" style={{ color: "#9ca3af" }}>
+          <Wind size={12} /><span className="text-[11px]">{weather.wind} m/s</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -252,6 +305,8 @@ function InTripScreen({ trip, phase }: { trip: Trip; phase: Extract<TripPhase, {
           <p className="text-[11px] mt-3" style={{ color: "rgba(255,255,255,0.35)" }}>{fmt(t)}</p>
         </div>
       </div>
+
+      <WeatherWidget city={hotel?.location ?? trip.destination.split(" · ")[0]} />
 
       {gondola && (
         <div className="mx-4 rounded-3xl px-5 py-4 mb-4" style={{ background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", boxShadow: "0 4px 20px rgba(251,191,36,0.3)" }}>
