@@ -11,7 +11,7 @@ const dotStyle: Record<string, string> = {
   neutral: "#d1d5db",
 };
 
-export default function UpdatesScreen({ unreadCount }: { unreadCount: number }) {
+export default function UpdatesScreen({ unreadCount: _unreadCount }: { unreadCount: number }) {
   const [notifs, setNotifs] = useState(notifications);
 
   return (

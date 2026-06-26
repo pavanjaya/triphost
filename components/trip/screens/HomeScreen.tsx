@@ -258,7 +258,7 @@ function InTripScreen({ trip, phase }: { trip: Trip; phase: Extract<TripPhase, {
           <div className="flex items-center gap-3">
             <span className="text-3xl">🚡</span>
             <div>
-              <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(0,0,0,0.45)" }}>Today's activity</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(0,0,0,0.45)" }}>Today&apos;s activity</p>
               <p className="text-[16px] font-black text-[#111827]">{gondola.activity}</p>
               <p className="text-[12px] font-bold mt-0.5 text-[#111827]">🕐 {gondola.slot}</p>
             </div>
@@ -411,7 +411,7 @@ function PostTripScreen({ trip }: { trip: Trip }) {
 }
 
 /* ── Main ── */
-export default function HomeScreen({ trip, onTabChange }: { trip: Trip; onTabChange?: (tab: string) => void }) {
+export default function HomeScreen({ trip, onTabChange: _onTabChange }: { trip: Trip; onTabChange?: (tab: string) => void }) {
   const [phaseIdx, setPhaseIdx] = useState<number | null>(null);
 
   if (phaseIdx !== null) {

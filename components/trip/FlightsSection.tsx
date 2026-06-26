@@ -1,6 +1,6 @@
 "use client";
 
-import { Plane, ArrowRight } from "lucide-react";
+import { Plane } from "lucide-react";
 import { Flight } from "@/lib/types";
 
 function formatDate(dateStr: string) {
