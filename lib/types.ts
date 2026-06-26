@@ -26,26 +26,35 @@ export interface FlightLeg {
   toTerminal?: string;
   departure: string;
   arrival: string;
-  layoverMinutes?: number; // layover AFTER this leg before the next
+  layoverMinutes?: number;
 }
 
-export interface Flight {
-  type: "onward" | "return";
-  number: string;
-  pnr: string;
-  bookingRef?: string;
-  airline?: string;
-  from: string;
-  to: string;
-  departure: string;
-  arrival: string;
-  date: string;
-  via: string;
-  pdfUrl?: string;
-  legs?: FlightLeg[];
+export type PassType = "flight" | "bus" | "train" | "boat" | "activity" | "hotel_voucher" | "other";
+
+export interface Pass {
+  id: string;
+  type: PassType;
+  subtype?: "onward" | "return";   // for flights / bus / train
+  title: string;                    // e.g. "IXU → SXR" or "Gulmarg Gondola"
+  from?: string;                    // city / station
+  to?: string;
+  via?: string;
+  departure?: string;               // HH:MM
+  arrival?: string;
+  date: string;                     // YYYY-MM-DD
+  reference: string;                // PNR / booking ID / ticket number
+  operator?: string;                // airline, bus company, etc.
+  slot?: string;                    // activity time slot
   passengers?: string[];
-  baggage?: { checkin: string; cabin: string };
+  notes?: string;
+  pdfUrl?: string;
+  // flight-specific extras
+  flightNumber?: string;
   travelClass?: string;
+  baggage?: { checkin: string; cabin: string };
+  legs?: FlightLeg[];
+  // activity-specific
+  activityPassengers?: { name: string; ticket: string }[];
 }
 
 export interface ItineraryDay {
@@ -55,22 +64,19 @@ export interface ItineraryDay {
   description: string;
 }
 
-export interface Passenger {
-  name: string;
-  ticket: string;
-}
-
-export interface Ticket {
-  activity: string;
-  date: string;
-  slot: string;
-  passengers: Passenger[];
-}
-
 export interface Contact {
   name: string;
   role: string;
   phone: string;
+}
+
+export interface Operator {
+  name: string;
+  tagline?: string;
+  logo?: string;       // URL or emoji fallback
+  color: string;       // brand hex color
+  phone?: string;
+  website?: string;
 }
 
 export interface Trip {
@@ -80,10 +86,13 @@ export interface Trip {
   end_date: string;
   group_size: number;
   organizer: string;
+  operator?: Operator;
   driver: Driver;
   hotels: Hotel[];
-  flights: Flight[];
+  passes: Pass[];
   itinerary: ItineraryDay[];
   contacts: Contact[];
-  tickets: Ticket[];
+  inclusions?: string[];
+  exclusions?: string[];
+  notes?: string[];
 }

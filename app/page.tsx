@@ -1,134 +1,330 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Users, Calendar, Bell, Plus } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { MapPin, Plus, Bell, ChevronRight, HelpCircle, Share2, LogOut, User } from "lucide-react";
 import { trips, TripSummary } from "@/lib/trips";
+import { getUserTrips, UserTrip } from "@/lib/user-trips";
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
 function daysUntil(d: string) {
   return Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
 }
+function fmtDate(d: string) {
+  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
-const tripColors: Record<string, { bg: string; emoji: string }> = {
-  "kashmir-2026": { bg: "linear-gradient(135deg, #1a2744 0%, #1e3a6e 100%)", emoji: "🏔️" },
-  "goa-2026": { bg: "linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%)", emoji: "🌊" },
-  "rajasthan-2025": { bg: "linear-gradient(135deg, #92400e 0%, #f97316 100%)", emoji: "🏰" },
+const TRIP_STYLE: Record<string, { bg: string; c1: string; c2: string; emoji: string }> = {
+  "kashmir-2026":   { bg: "linear-gradient(145deg, #0f1f4a 0%, #1a3a7a 60%, #1e4799 100%)", c1: "rgba(255,255,255,0.06)", c2: "rgba(255,255,255,0.04)", emoji: "🏔️" },
+  "goa-2026":       { bg: "linear-gradient(145deg, #0369a1 0%, #0284c7 60%, #38bdf8 100%)", c1: "rgba(255,255,255,0.08)", c2: "rgba(255,255,255,0.05)", emoji: "🌊" },
+  "rajasthan-2025": { bg: "linear-gradient(145deg, #7c2d12 0%, #c2410c 60%, #ea580c 100%)", c1: "rgba(255,255,255,0.07)", c2: "rgba(255,255,255,0.04)", emoji: "🏰" },
 };
+const DEFAULT_STYLE = { bg: "linear-gradient(145deg, #1f2937 0%, #374151 100%)", c1: "rgba(255,255,255,0.06)", c2: "rgba(255,255,255,0.04)", emoji: "✈️" };
 
-function TripCard({ trip }: { trip: TripSummary }) {
+function CardBg({ c1, c2 }: { c1: string; c2: string }) {
+  return (
+    <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: "none" }} aria-hidden="true">
+      <circle cx="88%" cy="-10%" r="120" fill={c1} />
+      <circle cx="95%" cy="110%" r="90" fill={c2} />
+      <circle cx="5%" cy="85%" r="60" fill={c1} />
+    </svg>
+  );
+}
+
+function HeroTripCard({ trip }: { trip: TripSummary }) {
+  const s = TRIP_STYLE[trip.id] ?? DEFAULT_STYLE;
   const days = daysUntil(trip.start_date);
-  const style = tripColors[trip.id] ?? { bg: "linear-gradient(135deg, #374151, #6b7280)", emoji: "✈️" };
-  const isCompleted = trip.status === "completed";
-
   return (
     <Link href={`/trip/${trip.id}`} className="block tap-active">
-      <div className="rounded-3xl overflow-hidden" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.08)" }}>
-        <div className="px-5 pt-5 pb-6 relative" style={{ background: style.bg, opacity: isCompleted ? 0.75 : 1 }}>
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                {trip.status === "active" && (
-                  <span className="text-[10px] font-bold text-white px-2.5 py-1 rounded-full" style={{ background: "rgba(34,197,94,0.3)", border: "1px solid rgba(34,197,94,0.5)" }}>
-                    🟢 Live now
-                  </span>
-                )}
-                {trip.status === "upcoming" && days > 0 && (
-                  <span className="text-[10px] font-bold text-white px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.18)" }}>
-                    In {days} days
-                  </span>
-                )}
-                {isCompleted && (
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }}>
-                    Completed
-                  </span>
-                )}
-              </div>
-              <h2 className="text-[20px] font-bold text-white leading-tight">{trip.name}</h2>
-              <div className="flex items-center gap-1 mt-1.5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                <MapPin size={10} />
-                <p className="text-[11px]">{trip.destination}</p>
-              </div>
-            </div>
-            <span className="text-[38px] leading-none ml-3">{style.emoji}</span>
-          </div>
+      <div className="rounded-[28px] overflow-hidden relative" style={{ background: s.bg }}>
+        <CardBg c1={s.c1} c2={s.c2} />
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[90px] leading-none select-none"
+          style={{ opacity: 0.85, filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.3))" }}>
+          {s.emoji}
         </div>
-        <div className="px-5 py-3.5 flex items-center justify-between" style={{ background: "#fff" }}>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5" style={{ color: "#9ca3af" }}>
-              <Calendar size={11} />
-              <span className="text-[11px]">{formatDate(trip.start_date)}</span>
+        <div className="relative px-6 pt-7 pb-6" style={{ minHeight: 180 }}>
+          <div className="mb-4">
+            {trip.status === "active" && (
+              <span className="text-[10px] font-bold text-white px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(34,197,94,0.25)", border: "1px solid rgba(34,197,94,0.4)" }}>
+                🟢 Live now
+              </span>
+            )}
+            {trip.status === "upcoming" && (
+              <span className="text-[10px] font-bold px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>
+                In {days} days
+              </span>
+            )}
+          </div>
+          <h2 className="text-[26px] font-black text-white leading-tight mb-1.5" style={{ maxWidth: "65%" }}>
+            {trip.name}
+          </h2>
+          <div className="flex items-center gap-1.5 mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
+            <MapPin size={11} strokeWidth={2} />
+            <p className="text-[11px] font-medium">{trip.destination}</p>
+          </div>
+          <div className="flex items-center justify-between"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Dates</p>
+                <p className="text-[12px] font-bold text-white">{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Group</p>
+                <p className="text-[12px] font-bold text-white">{trip.group_size} travellers</p>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5" style={{ color: "#9ca3af" }}>
-              <Users size={11} />
-              <span className="text-[11px]">{trip.group_size} travellers</span>
+            <div className="px-4 py-2 rounded-2xl" style={{ background: "rgba(255,255,255,0.15)" }}>
+              <span className="text-[12px] font-bold text-white">
+                {trip.status === "active" ? "Open" : "View"} →
+              </span>
             </div>
           </div>
-          <span className="text-[12px] font-bold" style={{ color: "#2563eb" }}>
-            {trip.status === "active" ? "Open →" : trip.status === "upcoming" ? "View →" : "Details →"}
-          </span>
         </div>
       </div>
     </Link>
   );
 }
 
-export default function HomePage() {
-  const active = trips.filter((t) => t.status === "active");
-  const upcoming = trips.filter((t) => t.status === "upcoming");
-  const completed = trips.filter((t) => t.status === "completed");
+function CompactTripCard({ trip }: { trip: TripSummary }) {
+  const s = TRIP_STYLE[trip.id] ?? DEFAULT_STYLE;
+  return (
+    <Link href={`/trip/${trip.id}`} className="block tap-active">
+      <div className="rounded-[20px] overflow-hidden relative flex items-center gap-4 px-5 py-4"
+        style={{ background: s.bg, opacity: 0.72 }}>
+        <CardBg c1={s.c1} c2={s.c2} />
+        <span className="text-[36px] leading-none shrink-0 relative z-10">{s.emoji}</span>
+        <div className="flex-1 min-w-0 relative z-10">
+          <p className="text-[15px] font-bold text-white leading-tight truncate">{trip.name}</p>
+          <p className="text-[11px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.5)" }}>
+            {fmtDate(trip.start_date)} · {trip.group_size} travellers
+          </p>
+        </div>
+        <span className="text-[11px] font-bold shrink-0 relative z-10" style={{ color: "rgba(255,255,255,0.55)" }}>Details →</span>
+      </div>
+    </Link>
+  );
+}
+
+function UserHeroCard({ trip }: { trip: UserTrip }) {
+  const today = new Date().toISOString().split("T")[0];
+  const status = today < trip.start_date ? "upcoming" : today > trip.end_date ? "completed" : "active";
+  const days = daysUntil(trip.start_date);
+  const bg = "linear-gradient(145deg, #1f2937 0%, #374151 100%)";
+  return (
+    <Link href={`/t/${trip.share_token}`} className="block tap-active">
+      <div className="rounded-[28px] overflow-hidden relative" style={{ background: bg, opacity: status === "completed" ? 0.72 : 1 }}>
+        <CardBg c1="rgba(255,255,255,0.06)" c2="rgba(255,255,255,0.04)" />
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none" style={{ opacity: 0.7 }}>✈️</div>
+        <div className="relative px-6 pt-7 pb-6" style={{ minHeight: 160 }}>
+          <div className="mb-4">
+            {status === "upcoming" && <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>In {days} days</span>}
+            {status === "completed" && <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Completed</span>}
+          </div>
+          <h2 className="text-[22px] font-black text-white leading-tight mb-1.5" style={{ maxWidth: "65%" }}>{trip.name}</h2>
+          {trip.destination && <p className="text-[11px] mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>{trip.destination}</p>}
+          <div className="flex items-center justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
+            <p className="text-[12px] font-bold text-white">{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
+            <div className="px-4 py-2 rounded-2xl" style={{ background: "rgba(255,255,255,0.15)" }}>
+              <span className="text-[12px] font-bold text-white">View →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* ── Profile bottom sheet ── */
+function ProfileSheet({ open, onClose, name, email, avatar }: {
+  open: boolean; onClose: () => void;
+  name: string; email: string; avatar?: string | null;
+}) {
+  if (!open) return null;
+  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <main className="min-h-dvh flex flex-col" style={{ background: "#f7f7f5" }}>
-      {/* App header */}
-      <div className="px-5 pt-14 pb-2 flex items-start justify-between">
-        <div>
-          <Image src="/triphost.svg" alt="TripHost" width={110} height={22} style={{ marginBottom: 4 }} />
-          <h1 className="text-[28px] font-black text-[#111827]">My Trips</h1>
+    <>
+      <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.4)" }} onClick={onClose} />
+      <div className="fixed bottom-0 left-1/2 z-50 w-full rounded-t-[32px] pb-10"
+        style={{ maxWidth: 430, transform: "translateX(-50%)", background: "#fff" }}>
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-4">
+          <div className="w-10 h-1 rounded-full" style={{ background: "#e5e7eb" }} />
         </div>
-        <button className="w-10 h-10 rounded-2xl flex items-center justify-center mt-2" style={{ background: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.08)" }}>
-          <Bell size={18} style={{ color: "#6b7280" }} />
+
+        {/* Profile */}
+        <div className="flex items-center gap-4 px-6 pb-5 mb-2" style={{ borderBottom: "1px solid #f3f4f6" }}>
+          {avatar ? (
+            /* eslint-disable-next-line @next/next/no-img-element */<img src={avatar} alt={name} className="w-14 h-14 rounded-2xl object-cover" />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-[20px]"
+              style={{ background: "#1a2744" }}>{initials}</div>
+          )}
+          <div>
+            <p className="text-[17px] font-bold text-[#111827]">{name}</p>
+            <p className="text-[12px] mt-0.5" style={{ color: "#9ca3af" }}>{email}</p>
+          </div>
+        </div>
+
+        {/* Menu items */}
+        {[
+          { icon: Bell, label: "Notifications", sub: "Trip alerts & updates" },
+          { icon: Share2, label: "Share Howztrip", sub: "Invite friends & family" },
+          { icon: HelpCircle, label: "Help & Support", sub: "FAQs and contact us" },
+          { icon: User, label: "Account settings", sub: "Manage your profile" },
+        ].map(({ icon: Icon, label, sub }) => (
+          <button key={label} className="w-full flex items-center gap-4 px-6 py-4 tap-active"
+            style={{ borderBottom: "1px solid #f9fafb" }}>
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "#f7f7f5" }}>
+              <Icon size={17} style={{ color: "#374151" }} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-[14px] font-semibold text-[#111827]">{label}</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#9ca3af" }}>{sub}</p>
+            </div>
+            <ChevronRight size={16} style={{ color: "#d1d5db" }} />
+          </button>
+        ))}
+
+        <button onClick={() => signOut({ callbackUrl: "/login" })}
+          className="w-full flex items-center gap-4 px-6 py-4 mt-2 tap-active">
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ background: "#fff1f2" }}>
+            <LogOut size={17} style={{ color: "#e11d48" }} />
+          </div>
+          <p className="text-[14px] font-semibold" style={{ color: "#e11d48" }}>Sign out</p>
         </button>
       </div>
+    </>
+  );
+}
 
-      {/* Active trip — full-width hero if exists */}
-      {active.length > 0 && (
-        <div className="px-4 mt-4 mb-2">
-          <p className="text-[11px] font-bold tracking-widest uppercase mb-2.5" style={{ color: "#9ca3af" }}>Active now</p>
-          <div className="flex flex-col gap-3">{active.map(t => <TripCard key={t.id} trip={t} />)}</div>
+/* ── Page ── */
+export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => { setUserTrips(getUserTrips()); }, []);
+  useEffect(() => {
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
+
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="flex items-center justify-center min-h-dvh" style={{ background: "#f0efeb" }}>
+        <div className="flex flex-col items-center gap-4">
+          <Image src="/howztrip.svg" alt="Howztrip" width={120} height={28} />
+          <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-orange-500 animate-spin mt-4" />
         </div>
+      </div>
+    );
+  }
+
+  const user = session?.user;
+  const firstName = user?.name?.split(" ")[0] ?? "there";
+  const active   = trips.filter(t => t.status === "active");
+  const upcoming = trips.filter(t => t.status === "upcoming");
+  const completed = trips.filter(t => t.status === "completed");
+
+  return (
+    <main className="min-h-dvh" style={{ background: "#f0efeb" }}>
+      {/* Top nav */}
+      <div className="flex items-center justify-between px-5 pb-3" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
+        <Image src="/howztrip.svg" alt="Howztrip" width={110} height={26} />
+        <div className="flex items-center gap-2">
+          <button className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#fff" }}>
+            <Bell size={17} style={{ color: "#6b7280" }} />
+          </button>
+          <button onClick={() => setProfileOpen(true)} className="tap-active">
+            {user?.image ? (
+              /* eslint-disable-next-line @next/next/no-img-element */<img src={user.image} alt={user.name ?? ""} className="w-10 h-10 rounded-2xl object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-[14px]"
+                style={{ background: "#1a2744" }}>
+                {firstName[0]?.toUpperCase()}
+              </div>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Greeting */}
+      <div className="px-5 pt-2 pb-5">
+        <p className="text-[13px] font-medium mb-0.5" style={{ color: "#9ca3af" }}>{greeting()},</p>
+        <h1 className="text-[30px] font-black text-[#111827] leading-tight">{firstName} 👋</h1>
+      </div>
+
+      {/* Active */}
+      {active.length > 0 && (
+        <section className="px-4 mb-5">
+          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>Active now</p>
+          <div className="flex flex-col gap-3">{active.map(t => <HeroTripCard key={t.id} trip={t} />)}</div>
+        </section>
       )}
 
       {/* Upcoming */}
       {upcoming.length > 0 && (
-        <div className="px-4 mt-4 mb-2">
-          <p className="text-[11px] font-bold tracking-widest uppercase mb-2.5" style={{ color: "#9ca3af" }}>Coming up</p>
-          <div className="flex flex-col gap-3">{upcoming.map(t => <TripCard key={t.id} trip={t} />)}</div>
-        </div>
+        <section className="px-4 mb-5">
+          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>Coming up</p>
+          <div className="flex flex-col gap-3">{upcoming.map(t => <HeroTripCard key={t.id} trip={t} />)}</div>
+        </section>
       )}
 
-      {/* Past */}
+      {/* User trips */}
+      {userTrips.length > 0 && (
+        <section className="px-4 mb-5">
+          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>My trips</p>
+          <div className="flex flex-col gap-3">{userTrips.map(t => <UserHeroCard key={t.id} trip={t} />)}</div>
+        </section>
+      )}
+
+      {/* Past trips */}
       {completed.length > 0 && (
-        <div className="px-4 mt-4 mb-2">
-          <p className="text-[11px] font-bold tracking-widest uppercase mb-2.5" style={{ color: "#9ca3af" }}>Past trips</p>
-          <div className="flex flex-col gap-3">{completed.map(t => <TripCard key={t.id} trip={t} />)}</div>
-        </div>
+        <section className="px-4 mb-5">
+          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>Past trips</p>
+          <div className="flex flex-col gap-2">{completed.map(t => <CompactTripCard key={t.id} trip={t} />)}</div>
+        </section>
       )}
 
-      {/* Floating invite banner */}
-      <div className="px-4 mt-6 mb-8">
-        <div className="rounded-3xl px-5 py-4 flex items-center gap-3" style={{ background: "linear-gradient(135deg, #1a2744, #1e3a6e)" }}>
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.12)" }}>
-            <Plus size={20} className="text-white" />
+      {/* Create trip CTA */}
+      <div className="px-4 mt-2 mb-12">
+        <Link href="/create" className="block tap-active">
+          <div className="rounded-[24px] px-5 py-5 flex items-center gap-4"
+            style={{ background: "#fff", border: "1.5px solid #e5e7eb" }}>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "#f0f4ff" }}>
+              <Plus size={20} style={{ color: "#2563eb" }} />
+            </div>
+            <div>
+              <p className="text-[14px] font-bold text-[#111827]">Plan your own trip</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#9ca3af" }}>Upload bookings · AI builds itinerary · Share link</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[13px] font-bold text-white">Have a trip coming up?</p>
-            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Ask your operator to add you on TripHost</p>
-          </div>
-        </div>
+        </Link>
       </div>
+
+      {/* Profile sheet */}
+      <ProfileSheet
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        name={user?.name ?? "Traveller"}
+        email={user?.email ?? ""}
+        avatar={user?.image}
+      />
     </main>
   );
 }

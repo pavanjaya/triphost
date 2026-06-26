@@ -1,19 +1,19 @@
 "use client";
 
-import { Home, CalendarDays, Ticket, Bell, Info } from "lucide-react";
+import { Home, CalendarDays, BedDouble, Info, Ticket } from "lucide-react";
 
-export type Tab = "home" | "plan" | "tickets" | "updates" | "info";
+export type Tab = "now" | "plan" | "stay" | "info" | "passes";
 
 const tabs: { id: Tab; label: string; Icon: React.ElementType }[] = [
-  { id: "home", label: "Home", Icon: Home },
-  { id: "plan", label: "Plan", Icon: CalendarDays },
-  { id: "tickets", label: "Tickets", Icon: Ticket },
-  { id: "updates", label: "Updates", Icon: Bell },
-  { id: "info", label: "Info", Icon: Info },
+  { id: "now",    label: "Now",    Icon: Home },
+  { id: "plan",   label: "Plan",   Icon: CalendarDays },
+  { id: "stay",   label: "Stay",   Icon: BedDouble },
+  { id: "info",   label: "Info",   Icon: Info },
+  { id: "passes", label: "Passes", Icon: Ticket },
 ];
 
-export default function BottomNav({ active, onChange, unread }: {
-  active: Tab; onChange: (tab: Tab) => void; unread?: number;
+export default function BottomNav({ active, onChange }: {
+  active: Tab; onChange: (tab: Tab) => void;
 }) {
   return (
     <nav className="flex bg-white" style={{
@@ -22,27 +22,17 @@ export default function BottomNav({ active, onChange, unread }: {
     }}>
       {tabs.map(({ id, label, Icon }) => {
         const isActive = active === id;
-        const hasUnread = id === "updates" && unread && unread > 0;
         return (
           <button key={id} onClick={() => onChange(id)}
-            className="flex-1 flex flex-col items-center pt-3 pb-1.5 gap-1 relative tap-active">
-            <div className="relative">
-              {isActive ? (
-                <div className="w-9 h-9 rounded-2xl bg-[#eff6ff] flex items-center justify-center">
-                  <Icon size={18} className="text-primary" strokeWidth={2.2} />
-                </div>
-              ) : (
-                <div className="w-9 h-9 flex items-center justify-center">
-                  <Icon size={20} className="text-[#9ca3af]" strokeWidth={1.7} />
-                </div>
-              )}
-              {hasUnread && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white">
-                  {unread}
-                </span>
-              )}
+            className="flex-1 flex flex-col items-center pt-3 pb-1.5 gap-1 tap-active">
+            <div className="w-9 h-9 rounded-2xl flex items-center justify-center"
+              style={{ background: isActive ? "#eff6ff" : "transparent" }}>
+              <Icon size={isActive ? 18 : 20}
+                style={{ color: isActive ? "#2563eb" : "#9ca3af" }}
+                strokeWidth={isActive ? 2.2 : 1.7} />
             </div>
-            <span className={`text-[10px] font-semibold ${isActive ? "text-primary" : "text-[#9ca3af]"}`}>
+            <span className="text-[10px] font-semibold"
+              style={{ color: isActive ? "#2563eb" : "#9ca3af" }}>
               {label}
             </span>
           </button>
