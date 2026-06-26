@@ -411,7 +411,8 @@ function PostTripScreen({ trip }: { trip: Trip }) {
 }
 
 /* ── Main ── */
-export default function HomeScreen({ trip, onTabChange: _onTabChange }: { trip: Trip; onTabChange?: (tab: string) => void }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function HomeScreen({ trip, onTabChange }: { trip: Trip; onTabChange?: (tab: import("../ui/BottomNav").Tab) => void }) {
   const [phaseIdx, setPhaseIdx] = useState<number | null>(null);
 
   if (phaseIdx !== null) {

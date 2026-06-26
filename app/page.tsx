@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Users, Calendar, Bell, Plus } from "lucide-react";
 import { trips, TripSummary } from "@/lib/trips";
 
@@ -84,7 +85,7 @@ export default function HomePage() {
       {/* App header */}
       <div className="px-5 pt-14 pb-2 flex items-start justify-between">
         <div>
-          <img src="/triphost.svg" alt="TripHost" style={{ height: 22, marginBottom: 4 }} />
+          <Image src="/triphost.svg" alt="TripHost" width={110} height={22} style={{ marginBottom: 4 }} />
           <h1 className="text-[28px] font-black text-[#111827]">My Trips</h1>
         </div>
         <button className="w-10 h-10 rounded-2xl flex items-center justify-center mt-2" style={{ background: "#fff", boxShadow: "0 1px 6px rgba(0,0,0,0.08)" }}>
