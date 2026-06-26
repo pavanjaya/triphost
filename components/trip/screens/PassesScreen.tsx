@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X, Maximize2, Plane, Bus, Train, Ship, Ticket, Hotel, ArrowRight, Clock, User, Luggage, FileText } from "lucide-react";
-import { Pass, PassType } from "@/lib/types";
+import { X, Maximize2, Plane, Bus, Train, Ship, Ticket, Hotel, ArrowRight, Clock, User, Luggage, FileText, ExternalLink } from "lucide-react";
+import { Pass, PassType, TripDocument, Trip } from "@/lib/types";
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -320,24 +320,89 @@ function PassCard({ pass, onPresent }: { pass: Pass; onPresent: () => void }) {
   );
 }
 
-export default function PassesScreen({ passes }: { passes: Pass[] }) {
+const TRIP_DOC_META: Record<TripDocument["type"], { emoji: string; label: string }> = {
+  insurance:     { emoji: "🛡️", label: "Insurance" },
+  permit:        { emoji: "📜", label: "Permit" },
+  itinerary:     { emoji: "📋", label: "Itinerary" },
+  hotel_voucher: { emoji: "🏨", label: "Hotel Voucher" },
+  other:         { emoji: "📄", label: "Document" },
+};
+
+function TripDocCard({ doc }: { doc: TripDocument }) {
+  const meta = TRIP_DOC_META[doc.type];
+  const hasFile = !!doc.fileBase64;
+  const hasUrl = !!doc.url;
+
+  function open() {
+    if (hasFile) {
+      const w = window.open();
+      w?.document.write(`<iframe src="${doc.fileBase64}" style="width:100%;height:100vh;border:none"/>`);
+    } else if (hasUrl) {
+      window.open(doc.url, "_blank");
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-3xl px-4 py-4 mb-3"
+      style={{ background: "#fff" }}>
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-[22px] shrink-0"
+        style={{ background: "#f7f7f5" }}>
+        {doc.emoji ?? meta.emoji}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold text-[#111827] truncate">{doc.name}</p>
+        <p className="text-[11px] mt-0.5" style={{ color: "#9ca3af" }}>{meta.label}</p>
+      </div>
+      {(hasFile || hasUrl) ? (
+        <button onClick={open}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl tap-active"
+          style={{ background: "#eff6ff" }}>
+          <ExternalLink size={12} style={{ color: "#2563eb" }} />
+          <span className="text-[11px] font-bold" style={{ color: "#2563eb" }}>Open</span>
+        </button>
+      ) : (
+        <span className="text-[11px] px-3 py-2 rounded-xl" style={{ background: "#f7f7f5", color: "#9ca3af" }}>
+          Pending
+        </span>
+      )}
+    </div>
+  );
+}
+
+export default function PassesScreen({ passes, trip }: { passes: Pass[]; trip: Trip }) {
   const [presenting, setPresenting] = useState<string | null>(null);
   const presenting_pass = passes.find(p => p.id === presenting) ?? null;
+  const tripDocs = trip.documents ?? [];
 
   return (
     <>
       {presenting_pass && <PresentModal pass={presenting_pass} onClose={() => setPresenting(null)} />}
       <div className="scroll-hide overflow-y-auto h-full" style={{ background: "#f7f7f5" }}>
-        <div className="px-5 pt-12 pb-5">
-          <p className="text-[12px] font-bold tracking-widest uppercase mb-1" style={{ color: "#9ca3af" }}>{passes.length} passes</p>
-          <h2 className="text-[26px] font-bold text-[#111827]">My Passes</h2>
-          <p className="text-[12px] mt-1" style={{ color: "#9ca3af" }}>Tap <strong style={{ color: "#2563eb" }}>Show</strong> to present at any counter</p>
+        <div className="px-5 pt-5 pb-4">
+          <h2 className="text-[22px] font-black text-[#111827]">Passes & Docs</h2>
         </div>
-        <div className="px-4 pb-8">
+
+        {/* Passes */}
+        <div className="px-4">
+          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>
+            Travel passes · {passes.length}
+          </p>
           {passes.map(pass => (
             <PassCard key={pass.id} pass={pass} onPresent={() => setPresenting(pass.id)} />
           ))}
         </div>
+
+        {/* Trip Documents */}
+        {tripDocs.length > 0 && (
+          <div className="px-4 mt-4">
+            <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>
+              Trip documents · {tripDocs.length}
+            </p>
+            {tripDocs.map(doc => <TripDocCard key={doc.id} doc={doc} />)}
+          </div>
+        )}
+
+        <div className="h-6" />
       </div>
     </>
   );

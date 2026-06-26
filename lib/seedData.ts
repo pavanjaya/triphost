@@ -129,6 +129,11 @@ export const kashmirTrip: Trip = {
     { name: "Mr. Sanjay Runwal", role: "Emergency Contact", phone: "+919404544946" },
     { name: "Trip Makers Office", role: "General Enquiries", phone: "+917248984612" },
   ],
+  documents: [
+    { id: "doc1", name: "Trip Itinerary PDF", type: "itinerary", emoji: "📋", url: "" },
+    { id: "doc2", name: "Travel Insurance Policy", type: "insurance", emoji: "🛡️", url: "" },
+    { id: "doc3", name: "Inner Line Permit — J&K", type: "permit", emoji: "📜", url: "" },
+  ],
   inclusions: [
     "2 nights stay at Srinagar + 1 night Gulmarg + 1 night Houseboat + 2 nights Pahalgam + 2 nights Katra",
     "3 rooms + 1 extra mattress + 1 child no-bed on complimentary basis",

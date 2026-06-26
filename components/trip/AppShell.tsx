@@ -71,7 +71,7 @@ export default function AppShell({ trip }: { trip: Trip }) {
             {active === "plan"     && <PlanScreen itinerary={trip.itinerary} trip={trip} />}
             {active === "stay"     && <StayScreen trip={trip} />}
             {active === "info"     && <InfoScreen trip={trip} />}
-            {active === "passes"   && <PassesScreen passes={trip.passes} />}
+            {active === "passes"   && <PassesScreen passes={trip.passes} trip={trip} />}
           </motion.div>
         </AnimatePresence>
       </div>

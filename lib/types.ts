@@ -79,6 +79,16 @@ export interface Operator {
   website?: string;
 }
 
+export interface TripDocument {
+  id: string;
+  name: string;
+  type: "insurance" | "permit" | "itinerary" | "hotel_voucher" | "other";
+  emoji?: string;
+  url?: string;          // external link
+  fileBase64?: string;   // uploaded PDF/image
+  mimeType?: string;
+}
+
 export interface Trip {
   name: string;
   destination: string;
@@ -95,4 +105,5 @@ export interface Trip {
   inclusions?: string[];
   exclusions?: string[];
   notes?: string[];
+  documents?: TripDocument[];
 }

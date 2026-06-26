@@ -6,6 +6,7 @@ import Image from "next/image";
 import { MapPin, Plus, Bell, ChevronRight, HelpCircle, Share2, User } from "lucide-react";
 import { trips, TripSummary } from "@/lib/trips";
 import { getUserTrips, UserTrip } from "@/lib/user-trips";
+import MyDocuments from "@/components/MyDocuments";
 
 function daysUntil(d: string) {
   return Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
@@ -161,6 +162,11 @@ function ProfileSheet({ open, onClose }: {
             <p className="text-[17px] font-bold text-[#111827]">Howztrip</p>
             <p className="text-[12px] mt-0.5" style={{ color: "#9ca3af" }}>Your trip, answered.</p>
           </div>
+        </div>
+
+        {/* My Documents wallet */}
+        <div className="py-2" style={{ borderBottom: "1px solid #f3f4f6" }}>
+          <MyDocuments />
         </div>
 
         {/* Menu items */}
