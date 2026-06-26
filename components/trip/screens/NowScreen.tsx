@@ -489,7 +489,6 @@ function UpdatesFeed({ organizer }: { organizer: string }) {
 /* ── Main ── */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function NowScreen({ trip, onTabChange }: { trip: Trip; onTabChange?: (tab: import("../ui/BottomNav").Tab) => void }) {
-  const isDev = process.env.NODE_ENV === "development";
   const [phaseIdx, setPhaseIdx] = useState<number | null>(null);
 
   if (phaseIdx !== null) {
@@ -545,7 +544,7 @@ export default function NowScreen({ trip, onTabChange }: { trip: Trip; onTabChan
       </div>
 
       {/* Dev phase switcher — only in development */}
-      {isDev && <PhaseSwitcher active={phaseIdx ?? 4} onChange={i => setPhaseIdx(i)} />}
+      <PhaseSwitcher active={phaseIdx ?? 4} onChange={i => setPhaseIdx(i)} />
 
       <UpdatesFeed organizer={trip.organizer} />
 
