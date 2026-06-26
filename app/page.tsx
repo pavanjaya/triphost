@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { MapPin, Plus, Bell, ChevronRight, HelpCircle, Share2, LogOut, User } from "lucide-react";
+import { MapPin, Plus, Bell, ChevronRight, HelpCircle, Share2, User } from "lucide-react";
 import { trips, TripSummary } from "@/lib/trips";
 import { getUserTrips, UserTrip } from "@/lib/user-trips";
 
@@ -14,12 +12,6 @@ function daysUntil(d: string) {
 }
 function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-}
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
 }
 
 const TRIP_STYLE: Record<string, { bg: string; c1: string; c2: string; emoji: string }> = {
@@ -146,12 +138,10 @@ function UserHeroCard({ trip }: { trip: UserTrip }) {
 }
 
 /* ── Profile bottom sheet ── */
-function ProfileSheet({ open, onClose, name, email, avatar }: {
+function ProfileSheet({ open, onClose }: {
   open: boolean; onClose: () => void;
-  name: string; email: string; avatar?: string | null;
 }) {
   if (!open) return null;
-  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <>
@@ -165,15 +155,11 @@ function ProfileSheet({ open, onClose, name, email, avatar }: {
 
         {/* Profile */}
         <div className="flex items-center gap-4 px-6 pb-5 mb-2" style={{ borderBottom: "1px solid #f3f4f6" }}>
-          {avatar ? (
-            /* eslint-disable-next-line @next/next/no-img-element */<img src={avatar} alt={name} className="w-14 h-14 rounded-2xl object-cover" />
-          ) : (
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-[20px]"
-              style={{ background: "#1a2744" }}>{initials}</div>
-          )}
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-[20px]"
+            style={{ background: "#1a2744" }}>H</div>
           <div>
-            <p className="text-[17px] font-bold text-[#111827]">{name}</p>
-            <p className="text-[12px] mt-0.5" style={{ color: "#9ca3af" }}>{email}</p>
+            <p className="text-[17px] font-bold text-[#111827]">Howztrip</p>
+            <p className="text-[12px] mt-0.5" style={{ color: "#9ca3af" }}>Your trip, answered.</p>
           </div>
         </div>
 
@@ -198,14 +184,6 @@ function ProfileSheet({ open, onClose, name, email, avatar }: {
           </button>
         ))}
 
-        <button onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full flex items-center gap-4 px-6 py-4 mt-2 tap-active">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: "#fff1f2" }}>
-            <LogOut size={17} style={{ color: "#e11d48" }} />
-          </div>
-          <p className="text-[14px] font-semibold" style={{ color: "#e11d48" }}>Sign out</p>
-        </button>
       </div>
     </>
   );
@@ -213,29 +191,11 @@ function ProfileSheet({ open, onClose, name, email, avatar }: {
 
 /* ── Page ── */
 export default function HomePage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
   const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => { setUserTrips(getUserTrips()); }, []);
-  useEffect(() => {
-    if (status === "unauthenticated") router.replace("/login");
-  }, [status, router]);
 
-  if (status === "loading" || status === "unauthenticated") {
-    return (
-      <div className="flex items-center justify-center min-h-dvh" style={{ background: "#f0efeb" }}>
-        <div className="flex flex-col items-center gap-4">
-          <Image src="/howztrip.svg" alt="Howztrip" width={120} height={28} />
-          <div className="w-6 h-6 rounded-full border-2 border-gray-300 border-t-orange-500 animate-spin mt-4" />
-        </div>
-      </div>
-    );
-  }
-
-  const user = session?.user;
-  const firstName = user?.name?.split(" ")[0] ?? "there";
   const active   = trips.filter(t => t.status === "active");
   const upcoming = trips.filter(t => t.status === "upcoming");
   const completed = trips.filter(t => t.status === "completed");
@@ -250,22 +210,12 @@ export default function HomePage() {
             <Bell size={17} style={{ color: "#6b7280" }} />
           </button>
           <button onClick={() => setProfileOpen(true)} className="tap-active">
-            {user?.image ? (
-              /* eslint-disable-next-line @next/next/no-img-element */<img src={user.image} alt={user.name ?? ""} className="w-10 h-10 rounded-2xl object-cover" />
-            ) : (
-              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-[14px]"
-                style={{ background: "#1a2744" }}>
-                {firstName[0]?.toUpperCase()}
-              </div>
-            )}
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-[14px]"
+              style={{ background: "#1a2744" }}>
+              P
+            </div>
           </button>
         </div>
-      </div>
-
-      {/* Greeting */}
-      <div className="px-5 pt-2 pb-5">
-        <p className="text-[13px] font-medium mb-0.5" style={{ color: "#9ca3af" }}>{greeting()},</p>
-        <h1 className="text-[30px] font-black text-[#111827] leading-tight">{firstName} 👋</h1>
       </div>
 
       {/* Active */}
@@ -318,13 +268,7 @@ export default function HomePage() {
       </div>
 
       {/* Profile sheet */}
-      <ProfileSheet
-        open={profileOpen}
-        onClose={() => setProfileOpen(false)}
-        name={user?.name ?? "Traveller"}
-        email={user?.email ?? ""}
-        avatar={user?.image}
-      />
+      <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
     </main>
   );
 }

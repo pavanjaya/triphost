@@ -1,5 +1,2 @@
-export { default } from "next-auth/middleware";
-
-export const config = {
-  matcher: ["/", "/trip/:path*", "/create/:path*"],
-};
+// Auth middleware disabled — login flow removed temporarily
+export const config = { matcher: [] };
