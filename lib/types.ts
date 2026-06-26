@@ -13,6 +13,9 @@ export interface Hotel {
   check_out: string;
   room_type: string;
   meal_plan: string;
+  address?: string;
+  wifi_name?: string;
+  wifi_password?: string;
 }
 
 export interface FlightLeg {

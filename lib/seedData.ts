@@ -14,11 +14,11 @@ export const kashmirTrip: Trip = {
     vehicle_type: "AC Tempo Traveller",
   },
   hotels: [
-    { name: "Hotel Asian Park", location: "Srinagar", phone: "+919424728320", check_in: "2026-05-17", check_out: "2026-05-19", room_type: "Deluxe", meal_plan: "B&D" },
-    { name: "Hotel Mama Palace", location: "Gulmarg", phone: "+919906000241", check_in: "2026-05-19", check_out: "2026-05-20", room_type: "Deluxe", meal_plan: "B&D" },
-    { name: "Cheerful Charley Houseboat", location: "Dal Lake, Srinagar", phone: "+919906849134", check_in: "2026-05-20", check_out: "2026-05-21", room_type: "Deluxe", meal_plan: "B&D" },
-    { name: "Hotel Srichan Resort", location: "Pahalgam", phone: "+919622430888", check_in: "2026-05-21", check_out: "2026-05-23", room_type: "Deluxe", meal_plan: "B&D" },
-    { name: "Hotel Mahesh Residency", location: "Katra", phone: "+919906024084", check_in: "2026-05-23", check_out: "2026-05-25", room_type: "Deluxe", meal_plan: "B&D" },
+    { name: "Hotel Asian Park", location: "Srinagar", phone: "+919424728320", check_in: "2026-05-17", check_out: "2026-05-19", room_type: "Deluxe", meal_plan: "B&D", address: "Residency Rd, Srinagar, J&K 190001", wifi_name: "AsianPark_Guest", wifi_password: "Kashmir2026" },
+    { name: "Hotel Mama Palace", location: "Gulmarg", phone: "+919906000241", check_in: "2026-05-19", check_out: "2026-05-20", room_type: "Deluxe", meal_plan: "B&D", address: "Main Gulmarg Rd, Gulmarg, J&K 193403", wifi_name: "MamaPalace_WiFi", wifi_password: "Gulmarg@123" },
+    { name: "Cheerful Charley Houseboat", location: "Dal Lake, Srinagar", phone: "+919906849134", check_in: "2026-05-20", check_out: "2026-05-21", room_type: "Deluxe", meal_plan: "B&D", address: "Dal Lake Nagin, Srinagar, J&K 190001", wifi_name: "CheerfulCharley", wifi_password: "DalLake#1" },
+    { name: "Hotel Srichan Resort", location: "Pahalgam", phone: "+919622430888", check_in: "2026-05-21", check_out: "2026-05-23", room_type: "Deluxe", meal_plan: "B&D", address: "Pahalgam Main Rd, Pahalgam, J&K 192126", wifi_name: "Srichan_Resort", wifi_password: "Pahalgam2026" },
+    { name: "Hotel Mahesh Residency", location: "Katra", phone: "+919906024084", check_in: "2026-05-23", check_out: "2026-05-25", room_type: "Deluxe", meal_plan: "B&D", address: "Bank Colony, Katra, J&K 182301", wifi_name: "MaheshResidency", wifi_password: "Vaishno@786" },
   ],
   flights: [
     {
