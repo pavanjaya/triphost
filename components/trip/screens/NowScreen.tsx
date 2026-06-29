@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Phone, MapPin, AlertTriangle, CheckCircle2, Navigation, Wind, Droplets, PhoneCall, Wifi } from "lucide-react";
+import { Phone, MapPin, AlertTriangle, CheckCircle2, Navigation, PhoneCall, Wifi } from "lucide-react";
 import { Trip, Hotel } from "@/lib/types";
 import { notifications } from "@/lib/notifications";
 import { getPlacesForLocation } from "@/lib/places";
