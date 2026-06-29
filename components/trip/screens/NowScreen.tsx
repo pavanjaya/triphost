@@ -306,39 +306,29 @@ function InTripScreen({ trip, phase }: { trip: Trip; phase: Extract<TripPhase, {
 
   return (
     <>
-      {/* 1. Day header — cover image with all info overlaid, weather chip inline */}
-      <div className="mx-4 rounded-2xl overflow-hidden mb-4" style={{ position: "relative", minHeight: 200 }}>
-        {todayItinerary?.coverImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={todayItinerary.coverImage} alt={phase.title}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #1a2744, #1e3a6e)" }} />
-        )}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(10,20,55,0.9) 58%)" }} />
-        <div style={{ position: "relative" }} className="px-6 pt-5 pb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] font-bold tracking-[1.5px] uppercase px-2.5 py-1 rounded-full"
-              style={{ background: "rgba(34,197,94,0.25)", color: "#4ade80" }}>
-              Day {phase.day} of {phase.total}
-            </span>
-            {weather ? (
-              <div className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://openweathermap.org/img/wn/${weather.icon}.png`} width={20} height={20} alt="" style={{ marginLeft: -2 }} />
-                <span className="text-white text-[12px] font-bold">{weather.temp}°C</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
-                <span className="text-[13px]">🌤️</span>
-                <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>{location.split(",")[0]}</span>
-              </div>
-            )}
-          </div>
-          <h2 className="text-[22px] font-black text-white leading-snug mb-2">{phase.title}</h2>
-          <p className="text-[12px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>{phase.description}</p>
-          <p className="text-[11px] mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>{fmt(t)}</p>
+      {/* 1. Day header — solid color, no image */}
+      <div className="mx-4 rounded-2xl mb-4 px-5 pt-5 pb-5" style={{ background: "linear-gradient(135deg, #1a2744 0%, #22336b 100%)" }}>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[10px] font-bold tracking-[1.5px] uppercase px-2.5 py-1 rounded-full"
+            style={{ background: "rgba(34,197,94,0.2)", color: "#4ade80" }}>
+            Day {phase.day} of {phase.total}
+          </span>
+          {weather ? (
+            <div className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`https://openweathermap.org/img/wn/${weather.icon}.png`} width={18} height={18} alt="" />
+              <span className="text-white text-[12px] font-bold">{weather.temp}°C</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+              <span className="text-[12px]">🌤️</span>
+              <span className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.55)" }}>{location.split(",")[0]}</span>
+            </div>
+          )}
         </div>
+        <h2 className="text-[22px] font-black text-white leading-snug mb-2">{phase.title}</h2>
+        <p className="text-[12px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>{phase.description}</p>
+        <p className="text-[11px] mt-4" style={{ color: "rgba(255,255,255,0.25)" }}>{fmt(t)}</p>
       </div>
 
       {/* 2. Operator updates */}
@@ -659,43 +649,60 @@ export default function NowScreen({ trip }: { trip: Trip; onTabChange?: (tab: im
   const phase = getTripPhase(trip);
   const op = trip.operator;
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greetingEmoji = hour < 12 ? "🌅" : hour < 17 ? "☀️" : "🌙";
+
+  const phaseContext =
+    phase.type === "pre-trip" ? `Trip starts in ${phase.daysUntil} days` :
+    phase.type === "departure-day" ? "Departure day — have a great journey!" :
+    phase.type === "in-trip" ? `Day ${phase.day} of ${phase.total} · You're on your trip` :
+    phase.type === "return-day" ? "Heading home today — safe travels!" :
+    "Trip complete — hope it was wonderful!";
+
   return (
     <div className="scroll-hide overflow-y-auto h-full" style={{ background: "#f7f7f5", paddingBottom: 16 }}>
 
       {/* Header */}
-      <div style={{ background: "#f7f7f5" }}>
+      <div className="px-4 pt-5 pb-2">
+        {/* Operator row */}
         {op && (
-          <div className="flex items-center justify-between px-4 pt-5 pb-3">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
               {op.logo && (
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-[16px] shrink-0" style={{ background: "#ebebeb" }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: "#efefef" }}>
                   {op.logo}
                 </div>
               )}
-              <div>
-                <p className="text-[12px] font-bold leading-tight" style={{ color: op.color }}>{op.name}</p>
-                {op.tagline && <p className="text-[10px] mt-0.5" style={{ color: "#9ca3af" }}>{op.tagline}</p>}
-              </div>
+              <p className="text-[11px] font-bold" style={{ color: op.color }}>{op.name}</p>
             </div>
             {op.phone && (
               <a href={`tel:${op.phone.replace(/\s/g, "")}`}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-2xl tap-active" style={{ background: "#ebebeb" }}>
-                <PhoneCall size={13} style={{ color: op.color }} />
-                <span className="text-[11px] font-semibold" style={{ color: "#374151" }}>Contact</span>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl tap-active" style={{ background: "#ebebeb" }}>
+                <PhoneCall size={12} style={{ color: op.color }} />
+                <span className="text-[10px] font-semibold" style={{ color: "#374151" }}>Contact</span>
               </a>
             )}
           </div>
         )}
-        <div className="px-5 pt-2 pb-4">
-          <h1 className="text-[26px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h1>
-          <p className="text-[12px] mt-1.5 flex items-center gap-1.5" style={{ color: "#9ca3af" }}>
-            <MapPin size={11} />{trip.destination}
-          </p>
+
+        {/* Greeting */}
+        <p className="text-[13px] font-medium mb-1" style={{ color: "#9ca3af" }}>{greeting} {greetingEmoji}</p>
+        <h1 className="text-[28px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h1>
+        <p className="text-[12px] mt-1 flex items-center gap-1" style={{ color: "#9ca3af" }}>
+          <MapPin size={10} />{trip.destination}
+        </p>
+
+        {/* Phase context pill */}
+        <div className="mt-3 inline-flex items-center px-3 py-1.5 rounded-full" style={{ background: "#1a2744" }}>
+          <p className="text-[11px] font-semibold text-white">{phaseContext}</p>
         </div>
       </div>
 
       {/* Day strip navigator */}
-      <DayStrip trip={trip} overrideDate={overrideDate} onChange={setOverrideDate} />
+      <div className="mt-4">
+        <DayStrip trip={trip} overrideDate={overrideDate} onChange={setOverrideDate} />
+      </div>
 
       <div className="h-4" />
 
