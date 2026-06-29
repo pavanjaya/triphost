@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Phone, MapPin, Wifi, Copy, Check, PhoneCall, Star, Clock, Utensils } from "lucide-react";
 import { Trip } from "@/lib/types";
-import { getPlaceData } from "@/lib/places-data";
+import { getPlaceData, fetchLivePlace, PlaceData } from "@/lib/places-data";
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
@@ -42,7 +42,11 @@ function RatingBar({ rating, count }: { rating: number; count: number }) {
 
 function HotelCard({ hotel, isTonight }: { hotel: Trip["hotels"][0]; isTonight: boolean }) {
   const [open, setOpen] = useState(isTonight);
-  const place = getPlaceData(hotel.name);
+  const [place, setPlace] = useState<PlaceData | null>(getPlaceData(hotel.name));
+
+  useEffect(() => {
+    fetchLivePlace(hotel.name, hotel.location).then(setPlace);
+  }, [hotel.name, hotel.location]);
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(hotel.name + " " + hotel.location)}`;
   const n = nights(hotel.check_in, hotel.check_out);
 
