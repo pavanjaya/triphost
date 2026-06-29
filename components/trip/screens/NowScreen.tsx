@@ -160,14 +160,22 @@ function DayUpdatesFeed({ date, organizer }: { date: string; organizer: string }
 function HotelCard({ hotel, isCheckoutDay, nextHotelName }: { hotel: Hotel; isCheckoutDay: boolean; nextHotelName?: string }) {
   const nights = nightsBetween(hotel.check_in, hotel.check_out);
   const mealFull: Record<string, string> = { "B&D": "Breakfast & Dinner", "CP": "Breakfast only", "MAP": "Breakfast & Dinner", "AP": "All meals" };
+  const [photo, setPhoto] = useState<string | null>(hotel.image ?? null);
+
+  useEffect(() => {
+    fetch(`/api/place?name=${encodeURIComponent(hotel.name)}&location=${encodeURIComponent(hotel.location)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.photo_url) setPhoto(data.photo_url); })
+      .catch(() => {});
+  }, [hotel.name, hotel.location]);
 
   return (
     <div className="mx-4 rounded-2xl overflow-hidden mb-4" style={{ background: "#fff" }}>
       {/* Photo with full overlay */}
       <div className="w-full relative" style={{ height: 170, background: "#1a2744" }}>
-        {hotel.image && (
+        {photo && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={hotel.image} alt={hotel.name} className="w-full h-full object-cover" />
+          <img src={photo} alt={hotel.name} className="w-full h-full object-cover" />
         )}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.1) 50%)" }} />
         <span className="absolute top-3 left-3 text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full"
