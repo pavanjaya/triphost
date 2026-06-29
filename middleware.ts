@@ -1,2 +1,7 @@
-// Auth middleware disabled — login flow removed temporarily
-export const config = { matcher: [] };
+export { default } from "next-auth/middleware";
+
+export const config = {
+  matcher: [
+    "/((?!login|api/auth|_next/static|_next/image|favicon.ico|manifest.json|icons|howztrip.svg).*)",
+  ],
+};
