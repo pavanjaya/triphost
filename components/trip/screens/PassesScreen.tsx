@@ -15,20 +15,19 @@ function fmtLayover(mins: number) {
   return `${h}h ${m}m layover`;
 }
 
-const PASS_CONFIG: Record<PassType, { icon: React.ElementType; emoji: string; label: string; gradient: string }> = {
-  flight:        { icon: Plane,   emoji: "✈️", label: "Flight",        gradient: "linear-gradient(160deg, #0369a1 0%, #0ea5e9 100%)" },
-  bus:           { icon: Bus,     emoji: "🚌", label: "Bus",           gradient: "linear-gradient(160deg, #15803d 0%, #22c55e 100%)" },
-  train:         { icon: Train,   emoji: "🚂", label: "Train",         gradient: "linear-gradient(160deg, #b45309 0%, #f59e0b 100%)" },
-  boat:          { icon: Ship,    emoji: "⛵", label: "Boat",          gradient: "linear-gradient(160deg, #0e7490 0%, #06b6d4 100%)" },
-  activity:      { icon: Ticket,  emoji: "🎡", label: "Activity Pass", gradient: "linear-gradient(160deg, #1a2744 0%, #2563eb 100%)" },
-  hotel_voucher: { icon: Hotel,   emoji: "🏨", label: "Hotel Voucher", gradient: "linear-gradient(160deg, #7c3aed 0%, #a78bfa 100%)" },
-  other:         { icon: Ticket,  emoji: "🎫", label: "Pass",          gradient: "linear-gradient(160deg, #374151 0%, #6b7280 100%)" },
+const PASS_CONFIG: Record<PassType, { icon: React.ElementType; emoji: string; label: string; gradient: string; accent: string }> = {
+  flight:        { icon: Plane,   emoji: "✈️", label: "Flight",        gradient: "linear-gradient(160deg, #0369a1 0%, #0ea5e9 100%)", accent: "#0369a1" },
+  bus:           { icon: Bus,     emoji: "🚌", label: "Bus",           gradient: "linear-gradient(160deg, #15803d 0%, #22c55e 100%)", accent: "#15803d" },
+  train:         { icon: Train,   emoji: "🚂", label: "Train",         gradient: "linear-gradient(160deg, #b45309 0%, #f59e0b 100%)", accent: "#b45309" },
+  boat:          { icon: Ship,    emoji: "⛵", label: "Boat",          gradient: "linear-gradient(160deg, #0e7490 0%, #06b6d4 100%)", accent: "#0e7490" },
+  activity:      { icon: Ticket,  emoji: "🎡", label: "Activity Pass", gradient: "linear-gradient(160deg, #1a2744 0%, #2563eb 100%)", accent: "#2563eb" },
+  hotel_voucher: { icon: Hotel,   emoji: "🏨", label: "Hotel Voucher", gradient: "linear-gradient(160deg, #7c3aed 0%, #a78bfa 100%)", accent: "#7c3aed" },
+  other:         { icon: Ticket,  emoji: "🎫", label: "Pass",          gradient: "linear-gradient(160deg, #374151 0%, #6b7280 100%)", accent: "#374151" },
 };
 
-function passGradient(pass: Pass) {
-  if (pass.type === "flight" && pass.subtype === "return")
-    return "linear-gradient(160deg, #312e81 0%, #4f46e5 100%)";
-  return PASS_CONFIG[pass.type].gradient;
+function passAccent(pass: Pass) {
+  if (pass.type === "flight" && pass.subtype === "return") return "#312e81";
+  return PASS_CONFIG[pass.type].accent;
 }
 
 function Barcode({ value }: { value: string }) {
@@ -234,52 +233,52 @@ function PresentModal({ pass, onClose }: { pass: Pass; onClose: () => void }) {
 
 function PassCard({ pass, onPresent }: { pass: Pass; onPresent: () => void }) {
   const cfg = PASS_CONFIG[pass.type];
-  const gradient = passGradient(pass);
+  const accent = passAccent(pass);
   const fromCode = pass.from?.split(" ")[0];
   const toCode = pass.to?.split(" ")[0];
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-4" style={{ background: gradient }}>
-      {/* Header row */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-1">
+    <div className="rounded-2xl overflow-hidden mb-4" style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
+      {/* Colored accent strip */}
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between" style={{ borderBottom: `3px solid ${accent}` }}>
         <div className="flex items-center gap-2">
-          <span className="text-base">{cfg.emoji}</span>
-          <span className="text-[10px] font-bold tracking-[2px] uppercase" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <span className="text-sm">{cfg.emoji}</span>
+          <span className="text-[10px] font-bold tracking-[2px] uppercase" style={{ color: accent }}>
             {pass.subtype === "onward" ? "Onward · " : pass.subtype === "return" ? "Return · " : ""}{cfg.label}
             {(pass.legs?.length ?? 0) > 1 && (
-              <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>1 STOP</span>
+              <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded-full text-white" style={{ background: accent }}>1 STOP</span>
             )}
           </span>
         </div>
-        <span className="text-[13px] font-bold tracking-widest" style={{ color: "rgba(255,255,255,0.55)" }}>{pass.reference}</span>
+        <span className="text-[13px] font-bold tracking-widest" style={{ color: "#6b7280" }}>{pass.reference}</span>
       </div>
 
       {/* Body */}
-      <div className="px-5 pb-4 pt-3">
+      <div className="px-5 py-4">
         {fromCode && toCode ? (
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <p className="text-[28px] font-black text-white leading-none">{fromCode}</p>
-              <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{pass.from?.slice((fromCode?.length ?? 0) + 1)}</p>
-              {pass.departure && <p className="text-[20px] font-bold text-white mt-2">{pass.departure}</p>}
+              <p className="text-[30px] font-black leading-none" style={{ color: "#111827" }}>{fromCode}</p>
+              <p className="text-[11px] mt-1" style={{ color: "#9ca3af" }}>{pass.from?.slice((fromCode?.length ?? 0) + 1)}</p>
+              {pass.departure && <p className="text-[22px] font-bold mt-2" style={{ color: "#1f2937" }}>{pass.departure}</p>}
             </div>
             <div className="flex flex-col items-center gap-1 pb-2">
-              <div className="h-px w-10" style={{ background: "rgba(255,255,255,0.25)" }} />
-              <cfg.icon size={13} className="text-white opacity-50" />
-              <div className="h-px w-10" style={{ background: "rgba(255,255,255,0.25)" }} />
-              {pass.via && <p className="text-[9px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>via {pass.via}</p>}
+              <div className="h-px w-10" style={{ background: "#e5e7eb" }} />
+              <cfg.icon size={14} style={{ color: accent }} />
+              <div className="h-px w-10" style={{ background: "#e5e7eb" }} />
+              {pass.via && <p className="text-[9px] mt-1 font-semibold" style={{ color: "#9ca3af" }}>via {pass.via}</p>}
             </div>
             <div className="flex-1 text-right">
-              <p className="text-[28px] font-black text-white leading-none">{toCode}</p>
-              <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{pass.to?.slice((toCode?.length ?? 0) + 1)}</p>
-              {pass.arrival && <p className="text-[20px] font-bold text-white mt-2">{pass.arrival}</p>}
+              <p className="text-[30px] font-black leading-none" style={{ color: "#111827" }}>{toCode}</p>
+              <p className="text-[11px] mt-1" style={{ color: "#9ca3af" }}>{pass.to?.slice((toCode?.length ?? 0) + 1)}</p>
+              {pass.arrival && <p className="text-[22px] font-bold mt-2" style={{ color: "#1f2937" }}>{pass.arrival}</p>}
             </div>
           </div>
         ) : (
           <div>
-            <h3 className="text-[20px] font-bold text-white">{pass.title}</h3>
+            <h3 className="text-[20px] font-bold" style={{ color: "#111827" }}>{pass.title}</h3>
             {pass.slot && (
-              <div className="flex items-center gap-1.5 mt-1.5" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <div className="flex items-center gap-1.5 mt-1.5" style={{ color: "#6b7280" }}>
                 <Clock size={12} /><p className="text-[13px] font-semibold">{pass.slot}</p>
               </div>
             )}
@@ -287,29 +286,26 @@ function PassCard({ pass, onPresent }: { pass: Pass; onPresent: () => void }) {
         )}
       </div>
 
-      {/* Divider */}
-      <div className="mx-4 flex items-center gap-0" style={{ borderTop: "1.5px dashed rgba(255,255,255,0.18)" }} />
-
-      {/* Footer row — stays in gradient */}
-      <div className="px-5 py-3.5 flex items-center justify-between">
+      {/* Footer */}
+      <div className="px-5 py-3 flex items-center justify-between" style={{ borderTop: "1px dashed #e5e7eb" }}>
         <div>
-          <p className="text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <p className="text-[10px] font-semibold" style={{ color: "#9ca3af" }}>
             {fmtShort(pass.date)}{pass.flightNumber ? ` · ${pass.flightNumber}` : ""}{pass.operator ? ` · ${pass.operator}` : ""}
           </p>
           {pass.baggage && (
-            <p className="text-[11px] font-semibold mt-0.5 text-white opacity-70">
+            <p className="text-[11px] font-semibold mt-0.5" style={{ color: "#374151" }}>
               🧳 {pass.baggage.checkin} · {pass.baggage.cabin} cabin
             </p>
           )}
           {pass.activityPassengers && (
-            <p className="text-[11px] font-semibold mt-0.5 text-white opacity-70">
+            <p className="text-[11px] font-semibold mt-0.5" style={{ color: "#374151" }}>
               👥 {pass.activityPassengers.length} passengers
             </p>
           )}
         </div>
         <button onClick={onPresent}
-          className="flex items-center gap-1.5 font-bold text-[12px] px-4 py-2.5 rounded-xl tap-active shrink-0"
-          style={{ background: "rgba(255,255,255,0.18)", color: "#fff" }}>
+          className="flex items-center gap-1.5 font-bold text-[12px] px-4 py-2.5 rounded-xl tap-active shrink-0 text-white"
+          style={{ background: accent }}>
           <Maximize2 size={13} /> Show
         </button>
       </div>
