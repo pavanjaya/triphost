@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Uses Places API (New) — v1 endpoints
 const API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+const BASE = "https://places.googleapis.com/v1";
 
 export interface PlaceResult {
   name: string;
@@ -12,50 +14,56 @@ export interface PlaceResult {
   website: string | null;
   maps_url: string | null;
   place_id: string | null;
-  checkin_time: string | null;
-  checkout_time: string | null;
   types: string[];
 }
 
-async function searchPlaceId(name: string, location: string): Promise<string | null> {
-  const query = `${name} ${location}`;
-  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(query)}&inputtype=textquery&fields=place_id&key=${API_KEY}`;
-  const res = await fetch(url, { next: { revalidate: 86400 } }); // cache 24h
+async function searchPlace(query: string): Promise<{ id: string; photoName: string | null } | null> {
+  const res = await fetch(`${BASE}/places:searchText`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": API_KEY!,
+      "X-Goog-FieldMask": "places.id,places.photos",
+    },
+    body: JSON.stringify({ textQuery: query, maxResultCount: 1 }),
+    next: { revalidate: 86400 },
+  });
   const data = await res.json();
-  return data.candidates?.[0]?.place_id ?? null;
+  const place = data.places?.[0];
+  if (!place) return null;
+  return {
+    id: place.id,
+    photoName: place.photos?.[0]?.name ?? null,
+  };
 }
 
-async function getPlaceDetails(placeId: string): Promise<PlaceResult | null> {
-  const fields = [
-    "name", "rating", "user_ratings_total", "formatted_address",
-    "formatted_phone_number", "website", "url", "photos", "types",
-  ].join(",");
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${API_KEY}`;
-  const res = await fetch(url, { next: { revalidate: 86400 } });
-  const data = await res.json();
-  const p = data.result;
-  if (!p) return null;
-
-  // Get first photo URL if available
-  let photo_url: string | null = null;
-  if (p.photos?.[0]?.photo_reference) {
-    photo_url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=700&photo_reference=${p.photos[0].photo_reference}&key=${API_KEY}`;
-  }
+async function getPlaceDetails(placeId: string): Promise<Omit<PlaceResult, "photo_url"> | null> {
+  const fields = "displayName,rating,userRatingCount,formattedAddress,nationalPhoneNumber,websiteUri,googleMapsUri,types";
+  const res = await fetch(`${BASE}/places/${placeId}`, {
+    headers: {
+      "X-Goog-Api-Key": API_KEY!,
+      "X-Goog-FieldMask": fields,
+    },
+    next: { revalidate: 86400 },
+  });
+  const p = await res.json();
+  if (!p || p.error) return null;
 
   return {
-    name: p.name ?? null,
-    photo_url,
+    name: p.displayName?.text ?? null,
     rating: p.rating ?? null,
-    review_count: p.user_ratings_total ?? null,
-    address: p.formatted_address ?? null,
-    phone: p.formatted_phone_number ?? null,
-    website: p.website ?? null,
-    maps_url: p.url ?? null,
+    review_count: p.userRatingCount ?? null,
+    address: p.formattedAddress ?? null,
+    phone: p.nationalPhoneNumber ?? null,
+    website: p.websiteUri ?? null,
+    maps_url: p.googleMapsUri ?? null,
     place_id: placeId,
-    checkin_time: null,   // not in Places API — keep operator value
-    checkout_time: null,
     types: p.types ?? [],
   };
+}
+
+function getPhotoUrl(photoName: string): string {
+  return `${BASE}/${photoName}/media?maxWidthPx=700&key=${API_KEY}`;
 }
 
 export async function GET(req: NextRequest) {
@@ -66,19 +74,20 @@ export async function GET(req: NextRequest) {
   if (!name || !location) {
     return NextResponse.json({ error: "name and location required" }, { status: 400 });
   }
-
   if (!API_KEY) {
     return NextResponse.json({ error: "GOOGLE_PLACES_API_KEY not configured" }, { status: 503 });
   }
 
   try {
-    const placeId = await searchPlaceId(name, location);
-    if (!placeId) return NextResponse.json({ error: "Place not found" }, { status: 404 });
+    const found = await searchPlace(`${name} ${location} India`);
+    if (!found) return NextResponse.json({ error: "Place not found" }, { status: 404 });
 
-    const details = await getPlaceDetails(placeId);
+    const [details] = await Promise.all([getPlaceDetails(found.id)]);
     if (!details) return NextResponse.json({ error: "Details not found" }, { status: 404 });
 
-    return NextResponse.json(details);
+    const photo_url = found.photoName ? getPhotoUrl(found.photoName) : null;
+
+    return NextResponse.json({ ...details, photo_url });
   } catch (err) {
     console.error("[place API]", err);
     return NextResponse.json({ error: "Places API error" }, { status: 500 });
