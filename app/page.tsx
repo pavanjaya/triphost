@@ -203,7 +203,7 @@ export default function HomePage() {
   const completed = trips.filter(t => t.status === "completed");
 
   return (
-    <main className="min-h-dvh" style={{ background: "#f7f8fa" }}>
+    <main className="min-h-dvh" style={{ background: "#f7f7f5" }}>
       {/* Top nav */}
       <div className="flex items-center justify-between px-5 pb-3" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
         <Image src="/howztrip.svg" alt="Howztrip" width={110} height={26} />
