@@ -325,6 +325,49 @@ function PlacesToVisit({ location }: { location: string }) {
   );
 }
 
+/* ── Tomorrow card with live Places photo ── */
+function TomorrowCard({ tomorrow, tmrHotel, day, tripDestination }: {
+  tomorrow: Trip["itinerary"][0]; tmrHotel: Trip["hotels"][0] | undefined; day: number; tripDestination: string;
+}) {
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Use the next hotel location or extract first location from title
+    const searchName = tmrHotel?.location ?? tomorrow.title.split("→").pop()?.trim() ?? tomorrow.title;
+    const country = tripDestination.split("·")[0].trim();
+    fetch(`/api/place?name=${encodeURIComponent(searchName)}&location=${encodeURIComponent(country)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.photo_url) setPhoto(data.photo_url); })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tomorrow.date]);
+
+  return (
+    <div className="mx-4 rounded-2xl overflow-hidden mb-4" style={{ background: "#fff" }}>
+      <div className="relative" style={{ height: 80, background: photo ? undefined : "#1a2744" }}>
+        {photo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo} alt={tomorrow.title} className="w-full h-full object-cover" />
+        )}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 70%)" }} />
+        <p className="absolute left-4 text-[9px] font-bold tracking-widest uppercase text-white" style={{ top: "50%", transform: "translateY(-50%)" }}>
+          Tomorrow · Day {day}
+        </p>
+      </div>
+      <div className="px-5 py-4">
+        <p className="text-[15px] font-bold text-[#111827]">{tomorrow.title}</p>
+        <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#6b7280" }}>{tomorrow.description}</p>
+        {tmrHotel && (
+          <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+            <span className="text-base">🏨</span>
+            <p className="text-[12px]" style={{ color: "#9ca3af" }}>Checking into {tmrHotel.name}, {tmrHotel.location}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── In-trip ── */
 function InTripScreen({ trip, phase }: { trip: Trip; phase: Extract<TripPhase, { type: "in-trip" }> }) {
   const t = today();
@@ -432,31 +475,7 @@ function InTripScreen({ trip, phase }: { trip: Trip; phase: Extract<TripPhase, {
 
       {/* 9. Tomorrow */}
       {!phase.isLastDay && tomorrow && (
-        <div className="mx-4 rounded-2xl overflow-hidden mb-4" style={{ background: "#fff" }}>
-          {tomorrow.coverImage && (
-            <div className="relative" style={{ height: 80 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={tomorrow.coverImage} alt={tomorrow.title} className="w-full h-full object-cover" />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, transparent 65%)" }} />
-              <p className="absolute left-4 text-[9px] font-bold tracking-widest uppercase text-white" style={{ top: "50%", transform: "translateY(-50%)" }}>
-                Tomorrow · Day {phase.day + 1}
-              </p>
-            </div>
-          )}
-          <div className="px-5 py-4">
-            {!tomorrow.coverImage && (
-              <p className="text-[11px] font-bold tracking-widest uppercase mb-2" style={{ color: "#9ca3af" }}>Tomorrow · Day {phase.day + 1}</p>
-            )}
-            <p className="text-[15px] font-bold text-[#111827]">{tomorrow.title}</p>
-            <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#6b7280" }}>{tomorrow.description}</p>
-            {tmrHotel && (
-              <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                <span className="text-base">🏨</span>
-                <p className="text-[12px]" style={{ color: "#9ca3af" }}>Checking into {tmrHotel.name}, {tmrHotel.location}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <TomorrowCard tomorrow={tomorrow} tmrHotel={tmrHotel} day={phase.day + 1} tripDestination={trip.destination} />
       )}
     </>
   );
