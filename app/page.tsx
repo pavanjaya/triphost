@@ -15,73 +15,65 @@ function fmtDate(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-const TRIP_STYLE: Record<string, { bg: string; c1: string; c2: string; emoji: string }> = {
-  "kashmir-2026":   { bg: "linear-gradient(145deg, #0f1f4a 0%, #1a3a7a 60%, #1e4799 100%)", c1: "rgba(255,255,255,0.06)", c2: "rgba(255,255,255,0.04)", emoji: "🏔️" },
-  "goa-2026":       { bg: "linear-gradient(145deg, #0369a1 0%, #0284c7 60%, #38bdf8 100%)", c1: "rgba(255,255,255,0.08)", c2: "rgba(255,255,255,0.05)", emoji: "🌊" },
-  "rajasthan-2025": { bg: "linear-gradient(145deg, #7c2d12 0%, #c2410c 60%, #ea580c 100%)", c1: "rgba(255,255,255,0.07)", c2: "rgba(255,255,255,0.04)", emoji: "🏰" },
+const TRIP_META: Record<string, { accent: string; iconBg: string; emoji: string }> = {
+  "kashmir-2026":   { accent: "#1a3a7a", iconBg: "#e8eef8", emoji: "🏔️" },
+  "goa-2026":       { accent: "#0369a1", iconBg: "#e0f2fe", emoji: "🌊" },
+  "rajasthan-2025": { accent: "#c2410c", iconBg: "#fff0e8", emoji: "🏰" },
 };
-const DEFAULT_STYLE = { bg: "linear-gradient(145deg, #1f2937 0%, #374151 100%)", c1: "rgba(255,255,255,0.06)", c2: "rgba(255,255,255,0.04)", emoji: "✈️" };
-
-function CardBg({ c1, c2 }: { c1: string; c2: string }) {
-  return (
-    <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: "none" }} aria-hidden="true">
-      <circle cx="88%" cy="-10%" r="120" fill={c1} />
-      <circle cx="95%" cy="110%" r="90" fill={c2} />
-      <circle cx="5%" cy="85%" r="60" fill={c1} />
-    </svg>
-  );
-}
+const DEFAULT_META = { accent: "#374151", iconBg: "#f3f4f6", emoji: "✈️" };
 
 function HeroTripCard({ trip }: { trip: TripSummary }) {
-  const s = TRIP_STYLE[trip.id] ?? DEFAULT_STYLE;
+  const m = TRIP_META[trip.id] ?? DEFAULT_META;
   const days = daysUntil(trip.start_date);
   return (
     <Link href={`/trip/${trip.id}`} className="block tap-active">
-      <div className="rounded-[28px] overflow-hidden relative" style={{ background: s.bg }}>
-        <CardBg c1={s.c1} c2={s.c2} />
-        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[90px] leading-none select-none"
-          style={{ opacity: 0.85, filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.3))" }}>
-          {s.emoji}
-        </div>
-        <div className="relative px-6 pt-7 pb-6" style={{ minHeight: 180 }}>
-          <div className="mb-4">
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
+        {/* Accent top bar */}
+        <div className="h-1 w-full" style={{ background: m.accent }} />
+        <div className="px-5 pt-4 pb-5">
+          {/* Header row */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
+                style={{ background: m.iconBg }}>
+                {m.emoji}
+              </div>
+              <div>
+                <h2 className="text-[17px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h2>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <MapPin size={10} strokeWidth={2} style={{ color: "#9ca3af" }} />
+                  <p className="text-[11px]" style={{ color: "#9ca3af" }}>{trip.destination}</p>
+                </div>
+              </div>
+            </div>
             {trip.status === "active" && (
-              <span className="text-[10px] font-bold text-white px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(34,197,94,0.25)", border: "1px solid rgba(34,197,94,0.4)" }}>
-                🟢 Live now
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                style={{ background: "#dcfce7", color: "#16a34a" }}>
+                Live
               </span>
             )}
             {trip.status === "upcoming" && (
-              <span className="text-[10px] font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>
-                In {days} days
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0"
+                style={{ background: "#eff6ff", color: m.accent }}>
+                In {days}d
               </span>
             )}
           </div>
-          <h2 className="text-[26px] font-black text-white leading-tight mb-1.5" style={{ maxWidth: "65%" }}>
-            {trip.name}
-          </h2>
-          <div className="flex items-center gap-1.5 mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
-            <MapPin size={11} strokeWidth={2} />
-            <p className="text-[11px] font-medium">{trip.destination}</p>
-          </div>
-          <div className="flex items-center justify-between"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
+          {/* Footer row */}
+          <div className="flex items-center justify-between pt-3.5" style={{ borderTop: "1px solid #f3f4f6" }}>
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Dates</p>
-                <p className="text-[12px] font-bold text-white">{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
+                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Dates</p>
+                <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
               </div>
               <div>
-                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>Group</p>
-                <p className="text-[12px] font-bold text-white">{trip.group_size} travellers</p>
+                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Group</p>
+                <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{trip.group_size} travellers</p>
               </div>
             </div>
-            <div className="px-4 py-2 rounded-2xl" style={{ background: "rgba(255,255,255,0.15)" }}>
-              <span className="text-[12px] font-bold text-white">
-                {trip.status === "active" ? "Open" : "View"} →
-              </span>
-            </div>
+            <span className="text-[12px] font-bold" style={{ color: m.accent }}>
+              {trip.status === "active" ? "Open" : "View"} →
+            </span>
           </div>
         </div>
       </div>
@@ -90,20 +82,22 @@ function HeroTripCard({ trip }: { trip: TripSummary }) {
 }
 
 function CompactTripCard({ trip }: { trip: TripSummary }) {
-  const s = TRIP_STYLE[trip.id] ?? DEFAULT_STYLE;
+  const m = TRIP_META[trip.id] ?? DEFAULT_META;
   return (
     <Link href={`/trip/${trip.id}`} className="block tap-active">
-      <div className="rounded-[20px] overflow-hidden relative flex items-center gap-4 px-5 py-4"
-        style={{ background: s.bg, opacity: 0.72 }}>
-        <CardBg c1={s.c1} c2={s.c2} />
-        <span className="text-[36px] leading-none shrink-0 relative z-10">{s.emoji}</span>
-        <div className="flex-1 min-w-0 relative z-10">
-          <p className="text-[15px] font-bold text-white leading-tight truncate">{trip.name}</p>
-          <p className="text-[11px] mt-0.5 truncate" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <div className="rounded-2xl flex items-center gap-3.5 px-4 py-3.5"
+        style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] shrink-0"
+          style={{ background: m.iconBg }}>
+          {m.emoji}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[14px] font-bold leading-tight truncate" style={{ color: "#111827" }}>{trip.name}</p>
+          <p className="text-[11px] mt-0.5 truncate" style={{ color: "#9ca3af" }}>
             {fmtDate(trip.start_date)} · {trip.group_size} travellers
           </p>
         </div>
-        <span className="text-[11px] font-bold shrink-0 relative z-10" style={{ color: "rgba(255,255,255,0.55)" }}>Details →</span>
+        <span className="text-[11px] font-semibold shrink-0" style={{ color: "#9ca3af" }}>Details →</span>
       </div>
     </Link>
   );
@@ -113,24 +107,26 @@ function UserHeroCard({ trip }: { trip: UserTrip }) {
   const today = new Date().toISOString().split("T")[0];
   const status = today < trip.start_date ? "upcoming" : today > trip.end_date ? "completed" : "active";
   const days = daysUntil(trip.start_date);
-  const bg = "linear-gradient(145deg, #1f2937 0%, #374151 100%)";
   return (
     <Link href={`/t/${trip.share_token}`} className="block tap-active">
-      <div className="rounded-[28px] overflow-hidden relative" style={{ background: bg, opacity: status === "completed" ? 0.72 : 1 }}>
-        <CardBg c1="rgba(255,255,255,0.06)" c2="rgba(255,255,255,0.04)" />
-        <div className="absolute right-5 top-1/2 -translate-y-1/2 text-[80px] leading-none select-none" style={{ opacity: 0.7 }}>✈️</div>
-        <div className="relative px-6 pt-7 pb-6" style={{ minHeight: 160 }}>
-          <div className="mb-4">
-            {status === "upcoming" && <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}>In {days} days</span>}
-            {status === "completed" && <span className="text-[10px] font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>Completed</span>}
-          </div>
-          <h2 className="text-[22px] font-black text-white leading-tight mb-1.5" style={{ maxWidth: "65%" }}>{trip.name}</h2>
-          {trip.destination && <p className="text-[11px] mb-5" style={{ color: "rgba(255,255,255,0.5)" }}>{trip.destination}</p>}
-          <div className="flex items-center justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 14 }}>
-            <p className="text-[12px] font-bold text-white">{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
-            <div className="px-4 py-2 rounded-2xl" style={{ background: "rgba(255,255,255,0.15)" }}>
-              <span className="text-[12px] font-bold text-white">View →</span>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid #e5e7eb", opacity: status === "completed" ? 0.65 : 1 }}>
+        <div className="h-1 w-full" style={{ background: "#374151" }} />
+        <div className="px-5 pt-4 pb-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
+                style={{ background: "#f3f4f6" }}>✈️</div>
+              <div>
+                <h2 className="text-[17px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h2>
+                {trip.destination && <p className="text-[11px] mt-0.5" style={{ color: "#9ca3af" }}>{trip.destination}</p>}
+              </div>
             </div>
+            {status === "upcoming" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#eff6ff", color: "#1d4ed8" }}>In {days}d</span>}
+            {status === "completed" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#f3f4f6", color: "#9ca3af" }}>Done</span>}
+          </div>
+          <div className="flex items-center justify-between pt-3.5" style={{ borderTop: "1px solid #f3f4f6" }}>
+            <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
+            <span className="text-[12px] font-bold" style={{ color: "#374151" }}>View →</span>
           </div>
         </div>
       </div>
@@ -207,7 +203,7 @@ export default function HomePage() {
   const completed = trips.filter(t => t.status === "completed");
 
   return (
-    <main className="min-h-dvh" style={{ background: "#f0efeb" }}>
+    <main className="min-h-dvh" style={{ background: "#f7f8fa" }}>
       {/* Top nav */}
       <div className="flex items-center justify-between px-5 pb-3" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
         <Image src="/howztrip.svg" alt="Howztrip" width={110} height={26} />
