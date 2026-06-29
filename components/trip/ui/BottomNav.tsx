@@ -6,10 +6,10 @@ export type Tab = "now" | "plan" | "stay" | "info" | "passes";
 
 const tabs: { id: Tab; label: string; Icon: React.ElementType }[] = [
   { id: "now",    label: "Now",    Icon: Home },
-  { id: "plan",   label: "Plan",   Icon: CalendarDays },
-  { id: "stay",   label: "Stay",   Icon: BedDouble },
-  { id: "info",   label: "Info",   Icon: Info },
   { id: "passes", label: "Passes", Icon: Ticket },
+  { id: "stay",   label: "Stay",   Icon: BedDouble },
+  { id: "plan",   label: "Plan",   Icon: CalendarDays },
+  { id: "info",   label: "Info",   Icon: Info },
 ];
 
 export default function BottomNav({ active, onChange }: {

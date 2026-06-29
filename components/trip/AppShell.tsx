@@ -12,7 +12,7 @@ import InfoScreen from "./screens/InfoScreen";
 import PassesScreen from "./screens/PassesScreen";
 import { Trip } from "@/lib/types";
 
-const tabOrder: Tab[] = ["now", "plan", "stay", "info", "passes"];
+const tabOrder: Tab[] = ["now", "passes", "stay", "plan", "info"];
 
 function isTripActive(trip: Trip) {
   const today = new Date().toISOString().split("T")[0];
