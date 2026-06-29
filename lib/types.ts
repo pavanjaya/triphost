@@ -16,6 +16,7 @@ export interface Hotel {
   address?: string;
   wifi_name?: string;
   wifi_password?: string;
+  image?: string; // URL — photo of the property
 }
 
 export interface FlightLeg {
@@ -62,6 +63,8 @@ export interface ItineraryDay {
   date: string;
   title: string;
   description: string;
+  included?: string[];
+  coverImage?: string; // URL — operator can add a photo for the day
 }
 
 export interface Contact {
