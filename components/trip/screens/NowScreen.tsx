@@ -241,6 +241,20 @@ function HotelCard({ hotel, isCheckoutDay, nextHotelName }: { hotel: Hotel; isCh
 /* ── Places — 2-column photo grid ── */
 function PlacesToVisit({ location }: { location: string }) {
   const places = getPlacesForLocation(location);
+  const [photos, setPhotos] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    places.forEach(p => {
+      fetch(`/api/place?name=${encodeURIComponent(p.name)}&location=${encodeURIComponent(location)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.photo_url) setPhotos(prev => ({ ...prev, [p.name]: data.photo_url }));
+        })
+        .catch(() => {});
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
+
   if (places.length === 0) return null;
 
   const TYPE_BG: Record<string, string> = { nature: "#dcfce7", heritage: "#fef9c3", religious: "#fce7f3", activity: "#dbeafe", market: "#fff7ed", viewpoint: "#f3e8ff" };
@@ -254,9 +268,9 @@ function PlacesToVisit({ location }: { location: string }) {
       <div className="grid grid-cols-2 gap-3">
         {places.map((place, i) => (
           <div key={i} className="rounded-2xl overflow-hidden" style={{ background: "#fff" }}>
-            {place.image ? (
+            {photos[place.name] ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={place.image} alt={place.name} className="w-full object-cover" style={{ height: 88 }} />
+              <img src={photos[place.name]} alt={place.name} className="w-full object-cover" style={{ height: 88 }} />
             ) : (
               <div className="w-full flex items-center justify-center text-[28px]" style={{ height: 88, background: "#f7f7f5" }}>
                 {place.emoji}
