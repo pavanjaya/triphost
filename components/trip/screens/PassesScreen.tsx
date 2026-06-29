@@ -47,7 +47,9 @@ function Barcode({ value }: { value: string }) {
 
 function PresentModal({ pass, onClose }: { pass: Pass; onClose: () => void }) {
   const cfg = PASS_CONFIG[pass.type];
-  const gradient = passGradient(pass);
+  const gradient = pass.type === "flight" && pass.subtype === "return"
+    ? "linear-gradient(160deg, #312e81 0%, #4f46e5 100%)"
+    : PASS_CONFIG[pass.type].gradient;
   const fromCode = pass.from?.split(" ")[0] ?? "";
   const toCode = pass.to?.split(" ")[0] ?? "";
   const fromCity = pass.from?.slice(fromCode.length + 1) ?? "";
