@@ -161,11 +161,17 @@ function HotelCard({ hotel, isCheckoutDay, nextHotelName }: { hotel: Hotel; isCh
   const nights = nightsBetween(hotel.check_in, hotel.check_out);
   const mealFull: Record<string, string> = { "B&D": "Breakfast & Dinner", "CP": "Breakfast only", "MAP": "Breakfast & Dinner", "AP": "All meals" };
   const [photo, setPhoto] = useState<string | null>(hotel.image ?? null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`/api/place?name=${encodeURIComponent(hotel.name)}&location=${encodeURIComponent(hotel.location)}`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.photo_url) setPhoto(data.photo_url); })
+      .then(data => {
+        if (data?.photo_url) setPhoto(data.photo_url);
+        if (data?.rating) setRating(data.rating);
+        if (data?.review_count) setReviewCount(data.review_count);
+      })
       .catch(() => {});
   }, [hotel.name, hotel.location]);
 
@@ -185,9 +191,18 @@ function HotelCard({ hotel, isCheckoutDay, nextHotelName }: { hotel: Hotel; isCh
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 flex items-end justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-white font-black text-[19px] leading-snug">{hotel.name}</p>
-            <div className="flex items-center gap-1 mt-0.5">
-              <MapPin size={9} style={{ color: "rgba(255,255,255,0.5)" }} />
-              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{hotel.location}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-1">
+                <MapPin size={9} style={{ color: "rgba(255,255,255,0.5)" }} />
+                <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{hotel.location}</p>
+              </div>
+              {rating && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px]" style={{ color: "#fbbf24" }}>★</span>
+                  <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.8)" }}>{rating.toFixed(1)}</span>
+                  {reviewCount && <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>({reviewCount.toLocaleString()})</span>}
+                </div>
+              )}
             </div>
           </div>
           <a href={`tel:${hotel.phone}`} className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 tap-active" style={{ background: "#16a34a" }}>
@@ -250,6 +265,7 @@ function HotelCard({ hotel, isCheckoutDay, nextHotelName }: { hotel: Hotel; isCh
 function PlacesToVisit({ location }: { location: string }) {
   const places = getPlacesForLocation(location);
   const [photos, setPhotos] = useState<Record<string, string>>({});
+  const [ratings, setRatings] = useState<Record<string, number>>({});
 
   useEffect(() => {
     places.forEach(p => {
@@ -257,6 +273,7 @@ function PlacesToVisit({ location }: { location: string }) {
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data?.photo_url) setPhotos(prev => ({ ...prev, [p.name]: data.photo_url }));
+          if (data?.rating) setRatings(prev => ({ ...prev, [p.name]: data.rating }));
         })
         .catch(() => {});
     });
@@ -286,10 +303,17 @@ function PlacesToVisit({ location }: { location: string }) {
             )}
             <div className="px-3 pt-2 pb-3">
               <p className="text-[12px] font-bold text-[#111827] leading-snug">{place.name}</p>
-              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full capitalize mt-1 inline-block"
-                style={{ background: TYPE_BG[place.type] ?? "#f3f4f6", color: TYPE_FG[place.type] ?? "#374151" }}>
-                {place.type}
-              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full capitalize"
+                  style={{ background: TYPE_BG[place.type] ?? "#f3f4f6", color: TYPE_FG[place.type] ?? "#374151" }}>
+                  {place.type}
+                </span>
+                {ratings[place.name] && (
+                  <span className="text-[10px] font-semibold" style={{ color: "#6b7280" }}>
+                    ★ {ratings[place.name].toFixed(1)}
+                  </span>
+                )}
+              </div>
               {place.tip && (
                 <p className="text-[10px] mt-1 leading-snug" style={{ color: "#9ca3af" }}>{place.tip}</p>
               )}
