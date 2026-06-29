@@ -51,7 +51,7 @@ function DayCard({ day, trip }: { day: ItineraryDay; trip: Trip }) {
       <div className="flex flex-col items-center" style={{ width: 36 }}>
         <div className="w-9 h-9 rounded-2xl flex items-center justify-center font-black text-[13px] text-white shrink-0"
           style={{ background: today ? "#2563eb" : past ? "#d1d5db" : color }}>
-          {day.day}
+          {day.day === 0 ? "✈" : day.day}
         </div>
         {day.day < total && (
           <div className="flex-1 w-0.5 mt-1" style={{ background: "#e5e7eb", minHeight: 16 }} />
@@ -69,7 +69,7 @@ function DayCard({ day, trip }: { day: ItineraryDay; trip: Trip }) {
           onClick={() => setOpen(o => !o)}
         >
           <div className="flex items-center gap-3 px-4 py-4">
-            <span className="text-2xl shrink-0">{dayEmojis[day.day - 1] ?? "📍"}</span>
+            <span className="text-2xl shrink-0">{day.day === 0 ? "🛫" : (dayEmojis[day.day - 1] ?? "📍")}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-[14px] font-bold text-[#111827] leading-snug">{day.title}</p>
@@ -105,6 +105,14 @@ function DayCard({ day, trip }: { day: ItineraryDay; trip: Trip }) {
                 </div>
               ) : (
                 <p className="text-[13px] leading-relaxed mb-4" style={{ color: "#4b5563" }}>{day.description}</p>
+              )}
+
+              {/* Transport callout */}
+              {day.transport && (
+                <div className="flex gap-2 rounded-2xl px-4 py-3 mb-3"
+                  style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+                  <p className="text-[12px] leading-relaxed font-medium" style={{ color: "#0369a1" }}>{day.transport}</p>
+                </div>
               )}
 
               {/* Booked tickets */}

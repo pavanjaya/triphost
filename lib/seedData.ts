@@ -113,15 +113,58 @@ export const kashmirTrip: Trip = {
     },
   ],
   itinerary: [
-    { day: 1, date: "2026-05-17", title: "Srinagar arrival + local sightseeing", description: "Nishat Garden · Shalimar Garden · Chashmah Shahi · Pari Mahal · Shankaracharya · Dargah Hazratbal", coverImage: "https://picsum.photos/seed/srinagar-gardens/800/420" },
-    { day: 2, date: "2026-05-18", title: "Sonmarg day trip", description: "Thajwas Glacier · Zojila Zero Point (80 km, ~2 hrs each way)", coverImage: "https://picsum.photos/seed/sonmarg-glacier/800/420" },
-    { day: 3, date: "2026-05-19", title: "Srinagar → Gulmarg", description: "Scenic beauty + Gondola ride (tickets pre-booked, afternoon slot)", included: ["Gulmarg Gondola Phase 1 & 2 tickets"], coverImage: "https://picsum.photos/seed/gulmarg-snow/800/420" },
-    { day: 4, date: "2026-05-20", title: "Gulmarg → Srinagar Houseboat", description: "Personal shopping + 1-hour Shikara ride on Dal Lake", included: ["1-hour Shikara ride on Dal Lake"], coverImage: "https://picsum.photos/seed/dal-lake-shikara/800/420" },
-    { day: 5, date: "2026-05-21", title: "Srinagar → Pahalgam", description: "Apple Valley · Saffron Valley · Baisaran · Mini Switzerland (horses on own cost)", coverImage: "https://picsum.photos/seed/pahalgam-valley/800/420" },
-    { day: 6, date: "2026-05-22", title: "Pahalgam local sightseeing", description: "Aru Valley · Betab Valley · Chandanwadi (by local car)", coverImage: "https://picsum.photos/seed/aru-valley/800/420" },
-    { day: 7, date: "2026-05-23", title: "Pahalgam → Katra", description: "~208 km, 4–5 hrs drive · Rest at hotel", coverImage: "https://picsum.photos/seed/katra-hills/800/420" },
-    { day: 8, date: "2026-05-24", title: "Vaishno Devi darshan", description: "By foot or pony (own cost)", coverImage: "https://picsum.photos/seed/vaishno-temple/800/420" },
-    { day: 9, date: "2026-05-25", title: "Jammu drop + departure", description: "IXJ → DEL → IXU · Flight 6E 2356 at 13:10" },
+    {
+      day: 0, date: "2026-05-16", title: "Departure from Aurangabad",
+      description: "Reach Aurangabad Airport (IXU) by 6:30 AM. Flight 6E 7259 departs at 08:30 → Hyderabad (HYD) · Layover 2h 20m · Flight 6E 6409 departs 12:15 → lands Srinagar (SXR) at 15:05.",
+      transport: "✈️ IXU Aurangabad → HYD → SXR Srinagar · IndiGo · PNR B417MY",
+    },
+    {
+      day: 1, date: "2026-05-17", title: "Srinagar — local sightseeing",
+      description: "Land at Srinagar Airport at 15:05. Driver Mr. Zaid will receive you. Evening sightseeing: Nishat Garden · Shalimar Garden · Chashmah Shahi · Shankaracharya Temple · Dargah Hazratbal.",
+      transport: "🚐 Airport pickup by Mr. Zaid (JK 04 H 5338)",
+    },
+    {
+      day: 2, date: "2026-05-18", title: "Sonmarg day trip",
+      description: "Full day excursion to Sonmarg (~80 km, ~2 hrs). Thajwas Glacier · Zoji La Zero Point · Sindh River. Return to Srinagar hotel by evening.",
+      transport: "🚐 Day trip from Srinagar — depart by 7:00 AM",
+    },
+    {
+      day: 3, date: "2026-05-19", title: "Srinagar → Gulmarg",
+      description: "Check out from Hotel Asian Park. Drive to Gulmarg (~56 km, ~1.5 hrs). Gondola Phase 1 & 2 pre-booked for afternoon slot (12:00 PM – 3:30 PM). Check in to Hotel Mama Palace.",
+      transport: "🚐 Srinagar → Gulmarg · ~56 km · 1.5 hrs",
+      included: ["Gulmarg Gondola Phase 1 & 2 tickets (pre-booked)"],
+    },
+    {
+      day: 4, date: "2026-05-20", title: "Gulmarg → Dal Lake Houseboat",
+      description: "Check out from Hotel Mama Palace. Drive back to Srinagar. Personal shopping at Lal Chowk. 1-hour Shikara ride on Dal Lake (included). Check in to Cheerful Charley Houseboat on Nagin Lake.",
+      transport: "🚐 Gulmarg → Srinagar · ~56 km · 1.5 hrs",
+      included: ["1-hour Shikara ride on Dal Lake"],
+    },
+    {
+      day: 5, date: "2026-05-21", title: "Houseboat → Pahalgam",
+      description: "Check out from houseboat. Drive to Pahalgam (~95 km, ~2.5 hrs) via Saffron Valley. Visit Baisaran (Mini Switzerland) — horse ride on own cost. Apple Valley · Aru Valley en route.",
+      transport: "🚐 Srinagar → Pahalgam · ~95 km · 2.5 hrs",
+    },
+    {
+      day: 6, date: "2026-05-22", title: "Pahalgam — full day",
+      description: "Full day sightseeing around Pahalgam. Aru Valley · Betab Valley · Chandanwadi — covered by local taxi (own cost, approx ₹1,200–1,500 per cab). Evening leisure at Lidder River.",
+      transport: "🚕 Local taxi for valley trips (own cost ~₹1,200–1,500)",
+    },
+    {
+      day: 7, date: "2026-05-23", title: "Pahalgam → Katra",
+      description: "Check out from Hotel Srichan Resort. Long drive to Katra (~208 km, 4–5 hrs). Rest at hotel. Collect Vaishno Devi yatra slip from registration counter near hotel (200 m).",
+      transport: "🚐 Pahalgam → Katra · ~208 km · 4–5 hrs",
+    },
+    {
+      day: 8, date: "2026-05-24", title: "Vaishno Devi darshan",
+      description: "Early start — trek 14 km uphill to Vaishno Devi shrine. Banganga → Ardhkuwari → Bhawan. Pony/helicopter available on own cost. Return by evening. Last night in Katra.",
+      transport: "🚶 14 km trek · Pony/helicopter on own cost",
+    },
+    {
+      day: 9, date: "2026-05-25", title: "Katra → Jammu → Home",
+      description: "Check out from hotel. Drive to Jammu Airport (IXJ, ~48 km, ~1 hr). Flight 6E 2356 departs Jammu at 13:10 → Delhi (DEL) · Layover · Flight 6E 6256 departs 19:10 → lands Aurangabad (IXU) at 20:50. Trip ends. 🙏",
+      transport: "🚐 Katra → IXJ Jammu · ~48 km · 1 hr · then ✈️ IXJ → DEL → IXU · PNR L2KZSB",
+    },
   ],
   contacts: [
     { name: "Ms. Komal Surana", role: "Operations Manager", phone: "+918484899748" },

@@ -64,7 +64,8 @@ export interface ItineraryDay {
   title: string;
   description: string;
   included?: string[];
-  coverImage?: string; // URL — operator can add a photo for the day
+  transport?: string;
+  coverImage?: string;
 }
 
 export interface Contact {
