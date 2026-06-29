@@ -8,6 +8,7 @@ export interface TripSummary {
   organizer: string;
   status: "upcoming" | "active" | "completed";
   cover_emoji: string;
+  cover_image?: string;
 }
 
 function getStatus(start: string, end: string): TripSummary["status"] {
@@ -33,12 +34,13 @@ export const trips: TripSummary[] = [
     id: "goa-2026",
     name: "Goa Beach Retreat",
     destination: "North Goa · South Goa · Dudhsagar",
-    start_date: "2026-08-10",
-    end_date: "2026-08-15",
+    start_date: "2026-07-06",
+    end_date: "2026-07-11",
     group_size: 12,
     organizer: "Trip Makers",
-    status: getStatus("2026-08-10", "2026-08-15"),
+    status: getStatus("2026-07-06", "2026-07-11"),
     cover_emoji: "🌊",
+    cover_image: "https://picsum.photos/id/177/700/400",
   },
   {
     id: "rajasthan-2025",

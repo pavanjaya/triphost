@@ -25,56 +25,72 @@ const DEFAULT_META = { accent: "#374151", iconBg: "#f3f4f6", emoji: "✈️" };
 function HeroTripCard({ trip }: { trip: TripSummary }) {
   const m = TRIP_META[trip.id] ?? DEFAULT_META;
   const days = daysUntil(trip.start_date);
+  const hasImage = !!trip.cover_image;
+
   return (
     <Link href={`/trip/${trip.id}`} className="block tap-active">
       <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid #e5e7eb" }}>
-        {/* Accent top bar */}
-        <div className="h-1 w-full" style={{ background: m.accent }} />
-        <div className="px-5 pt-4 pb-5">
-          {/* Header row */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
-                style={{ background: m.iconBg }}>
-                {m.emoji}
+        {/* Cover image */}
+        {hasImage ? (
+          <div className="relative" style={{ height: 160 }}>
+            <img src={trip.cover_image} alt={trip.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.05) 60%)" }} />
+            {/* Status badge over image */}
+            <div style={{ position: "absolute", top: 12, right: 12 }}>
+              {trip.status === "active" && (
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(22,163,74,0.9)", color: "#fff" }}>🟢 Live</span>
+              )}
+              {trip.status === "upcoming" && (
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(255,255,255,0.92)", color: m.accent }}>In {days} days</span>
+              )}
+            </div>
+            {/* Trip name over image */}
+            <div style={{ position: "absolute", bottom: 12, left: 14, right: 14 }}>
+              <h2 className="text-[20px] font-black text-white leading-tight">{trip.name}</h2>
+              <div className="flex items-center gap-1 mt-0.5">
+                <MapPin size={10} strokeWidth={2} style={{ color: "rgba(255,255,255,0.7)" }} />
+                <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.7)" }}>{trip.destination}</p>
               </div>
-              <div>
-                <h2 className="text-[17px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h2>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <MapPin size={10} strokeWidth={2} style={{ color: "#9ca3af" }} />
-                  <p className="text-[11px]" style={{ color: "#9ca3af" }}>{trip.destination}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="h-1 w-full" style={{ background: m.accent }} />
+            <div className="px-5 pt-4 pb-2 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
+                  style={{ background: m.iconBg }}>{m.emoji}</div>
+                <div>
+                  <h2 className="text-[17px] font-black" style={{ color: "#111827" }}>{trip.name}</h2>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <MapPin size={10} strokeWidth={2} style={{ color: "#9ca3af" }} />
+                    <p className="text-[11px]" style={{ color: "#9ca3af" }}>{trip.destination}</p>
+                  </div>
                 </div>
               </div>
+              {trip.status === "active" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#dcfce7", color: "#16a34a" }}>Live</span>}
+              {trip.status === "upcoming" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#eff6ff", color: m.accent }}>In {days}d</span>}
             </div>
-            {trip.status === "active" && (
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                style={{ background: "#dcfce7", color: "#16a34a" }}>
-                Live
-              </span>
-            )}
-            {trip.status === "upcoming" && (
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0"
-                style={{ background: "#eff6ff", color: m.accent }}>
-                In {days}d
-              </span>
-            )}
-          </div>
-          {/* Footer row */}
-          <div className="flex items-center justify-between pt-3.5" style={{ borderTop: "1px solid #f3f4f6" }}>
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Dates</p>
-                <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
-              </div>
-              <div>
-                <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Group</p>
-                <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{trip.group_size} travellers</p>
-              </div>
+          </>
+        )}
+        {/* Footer */}
+        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderTop: "1px solid #f3f4f6" }}>
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Dates</p>
+              <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
             </div>
-            <span className="text-[12px] font-bold" style={{ color: m.accent }}>
-              {trip.status === "active" ? "Open" : "View"} →
-            </span>
+            <div>
+              <p className="text-[9px] font-bold tracking-widest uppercase mb-0.5" style={{ color: "#d1d5db" }}>Group</p>
+              <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{trip.group_size} travellers</p>
+            </div>
           </div>
+          <span className="text-[12px] font-bold" style={{ color: m.accent }}>
+            {trip.status === "active" ? "Open" : "View"} →
+          </span>
         </div>
       </div>
     </Link>
