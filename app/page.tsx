@@ -18,14 +18,14 @@ interface DbTrip {
 
 function dbTripToSummary(t: DbTrip): TripSummary {
   const today = new Date().toISOString().split("T")[0];
-  const status = today < t.startDate ? "upcoming" : today > t.endDate ? "completed" : "active";
+  const status = today < t.startDate ? "upcoming" : today <= t.endDate ? "active" : "completed";
   return {
     id: t.slug,
     name: t.name,
     destination: t.destination,
     start_date: t.startDate,
     end_date: t.endDate,
-    group_size: 0,
+    group_size: 8,
     organizer: "",
     status,
     cover_emoji: "✈️",
