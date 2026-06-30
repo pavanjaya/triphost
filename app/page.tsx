@@ -4,9 +4,33 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Plus, Bell, ChevronRight, HelpCircle, Share2, User } from "lucide-react";
-import { trips, TripSummary } from "@/lib/trips";
-import { getUserTrips, UserTrip } from "@/lib/user-trips";
+import { TripSummary } from "@/lib/trips";
 import MyDocuments from "@/components/MyDocuments";
+
+interface DbTrip {
+  slug: string;
+  name: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  role: string;
+}
+
+function dbTripToSummary(t: DbTrip): TripSummary {
+  const today = new Date().toISOString().split("T")[0];
+  const status = today < t.startDate ? "upcoming" : today > t.endDate ? "completed" : "active";
+  return {
+    id: t.slug,
+    name: t.name,
+    destination: t.destination,
+    start_date: t.startDate,
+    end_date: t.endDate,
+    group_size: 0,
+    organizer: "",
+    status,
+    cover_emoji: "✈️",
+  };
+}
 
 function daysUntil(d: string) {
   return Math.ceil((new Date(d).getTime() - Date.now()) / 86400000);
@@ -119,36 +143,6 @@ function CompactTripCard({ trip }: { trip: TripSummary }) {
   );
 }
 
-function UserHeroCard({ trip }: { trip: UserTrip }) {
-  const today = new Date().toISOString().split("T")[0];
-  const status = today < trip.start_date ? "upcoming" : today > trip.end_date ? "completed" : "active";
-  const days = daysUntil(trip.start_date);
-  return (
-    <Link href={`/t/${trip.share_token}`} className="block tap-active">
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: "1px solid #e5e7eb", opacity: status === "completed" ? 0.65 : 1 }}>
-        <div className="h-1 w-full" style={{ background: "#374151" }} />
-        <div className="px-5 pt-4 pb-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[22px] shrink-0"
-                style={{ background: "#f3f4f6" }}>✈️</div>
-              <div>
-                <h2 className="text-[17px] font-black leading-tight" style={{ color: "#111827" }}>{trip.name}</h2>
-                {trip.destination && <p className="text-[11px] mt-0.5" style={{ color: "#9ca3af" }}>{trip.destination}</p>}
-              </div>
-            </div>
-            {status === "upcoming" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#eff6ff", color: "#1d4ed8" }}>In {days}d</span>}
-            {status === "completed" && <span className="text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: "#f3f4f6", color: "#9ca3af" }}>Done</span>}
-          </div>
-          <div className="flex items-center justify-between pt-3.5" style={{ borderTop: "1px solid #f3f4f6" }}>
-            <p className="text-[12px] font-semibold" style={{ color: "#374151" }}>{fmtDate(trip.start_date)} – {fmtDate(trip.end_date)}</p>
-            <span className="text-[12px] font-bold" style={{ color: "#374151" }}>View →</span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 /* ── Profile bottom sheet ── */
 function ProfileSheet({ open, onClose }: {
@@ -209,14 +203,21 @@ function ProfileSheet({ open, onClose }: {
 
 /* ── Page ── */
 export default function HomePage() {
-  const [userTrips, setUserTrips] = useState<UserTrip[]>([]);
+  const [allTrips, setAllTrips] = useState<TripSummary[]>([]);
+  const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  useEffect(() => { setUserTrips(getUserTrips()); }, []);
+  useEffect(() => {
+    fetch("/api/my-trips")
+      .then(r => r.ok ? r.json() : { trips: [] })
+      .then(data => setAllTrips((data.trips as DbTrip[]).map(dbTripToSummary)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-  const active   = trips.filter(t => t.status === "active");
-  const upcoming = trips.filter(t => t.status === "upcoming");
-  const completed = trips.filter(t => t.status === "completed");
+  const active    = allTrips.filter(t => t.status === "active");
+  const upcoming  = allTrips.filter(t => t.status === "upcoming");
+  const completed = allTrips.filter(t => t.status === "completed");
 
   return (
     <main className="min-h-dvh" style={{ background: "#f7f7f5" }}>
@@ -236,6 +237,24 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="px-4 mb-5">
+          {[1,2].map(i => (
+            <div key={i} className="rounded-2xl mb-3 animate-pulse" style={{ height: 120, background: "#e5e7eb" }} />
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && allTrips.length === 0 && (
+        <div className="px-4 py-16 flex flex-col items-center text-center">
+          <p className="text-[40px] mb-4">✈️</p>
+          <p className="text-[16px] font-bold text-[#111827]">No trips yet</p>
+          <p className="text-[13px] mt-1" style={{ color: "#9ca3af" }}>Your operator will add you to a trip</p>
+        </div>
+      )}
+
       {/* Active */}
       {active.length > 0 && (
         <section className="px-4 mb-5">
@@ -249,14 +268,6 @@ export default function HomePage() {
         <section className="px-4 mb-5">
           <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>Coming up</p>
           <div className="flex flex-col gap-3">{upcoming.map(t => <HeroTripCard key={t.id} trip={t} />)}</div>
-        </section>
-      )}
-
-      {/* User trips */}
-      {userTrips.length > 0 && (
-        <section className="px-4 mb-5">
-          <p className="text-[10px] font-bold tracking-[0.12em] uppercase mb-3" style={{ color: "#9ca3af" }}>My trips</p>
-          <div className="flex flex-col gap-3">{userTrips.map(t => <UserHeroCard key={t.id} trip={t} />)}</div>
         </section>
       )}
 
