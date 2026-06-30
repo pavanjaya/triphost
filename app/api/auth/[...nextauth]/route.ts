@@ -1,6 +1,9 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const handler = NextAuth({
   providers: [
@@ -8,7 +11,6 @@ const handler = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    // Dev-only: quick guest login without Google OAuth setup
     ...(process.env.NODE_ENV === "development"
       ? [
           CredentialsProvider({
@@ -19,7 +21,7 @@ const handler = NextAuth({
               return {
                 id: "dev-user-1",
                 name: "Pavan J",
-                email: "jangidpavan@gmail.com",
+                email: "pavanjangid.des@gmail.com",
                 image: null,
               };
             },
@@ -29,6 +31,19 @@ const handler = NextAuth({
   ],
   pages: { signIn: "/login" },
   callbacks: {
+    async signIn({ user }) {
+      if (!user.email) return false;
+      // Upsert user into database on every login
+      const existing = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
+      if (existing.length === 0) {
+        await db.insert(users).values({
+          email: user.email,
+          name: user.name ?? null,
+          image: user.image ?? null,
+        });
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
         (session.user as { id?: string }).id = token.sub;
